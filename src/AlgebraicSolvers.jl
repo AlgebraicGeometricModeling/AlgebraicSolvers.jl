@@ -17,8 +17,6 @@ module AlgebraicSolvers
   include("newton.jl")
   include("toric.jl")
 
-
-
   function buildpolyvar(::Type{PV}, arg, var) where PV
     :($(esc(arg)) = $var)
   end
@@ -31,7 +29,7 @@ module AlgebraicSolvers
     reduce((x,y) -> :($x; $y), V; init = :() )
   end
 
-  export monomials
   monomials = DynamicPolynomials.monomials
+  export monomials
 
 end
