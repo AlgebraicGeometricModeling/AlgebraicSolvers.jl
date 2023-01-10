@@ -1,0 +1,5 @@
+name = "AlgebraicSolvers"
+uuid = "36cc366f-6373-477c-92c8-0345b2862178"
+authors = ["mourrain <bernard.mourrain@inria.fr>"]
+version = "0.1.0"
+
