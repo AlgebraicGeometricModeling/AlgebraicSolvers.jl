@@ -3,17 +3,16 @@ The package `AlgebraicSolvers.jl` provides some tools for solving polynomial equ
 To install the package within julia:
 
 ```julia
-using Pkg
-Pkg.clone("https://gitlab.inria.fr/AlgebraicGeometricModeling/AlgebraicSolvers.jl.git")
+] add https://gitlab.inria.fr/AlgebraicGeometricModeling/AlgebraicSolvers.jl
 ```
 
 
 To use it within julia:
 
 ```julia
-using AlgebraicSolvers
+using DynamicPolynomials, AlgebraicSolvers
 
-X = @Ring x1 x2 x3
+X = @polyvar x1 x2 x3
 n = length(X)
 
 d = 3
