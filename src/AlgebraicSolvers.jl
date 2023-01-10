@@ -29,7 +29,7 @@ module AlgebraicSolvers
     reduce((x,y) -> :($x; $y), V; init = :() )
   end
 
-  monomials = DynamicPolynomials.monomials
-  export monomials
+  #monomials = DynamicPolynomials.monomials
+  #export monomials
 
 end

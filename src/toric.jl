@@ -1,12 +1,7 @@
 export support, toric_mat, solve_toric
 
 function support(p::Polynomial)
-    X = variables(p)
-    r = zero(p)
-    for t in p
-        r+= Monomial(X,t.x.z)
-    end
-    r
+    sum(monomials(p))
 end
 
 function toric_mat(P, A)
@@ -23,7 +18,7 @@ function toric_mat(P, A)
         end
     end
     m*= A[length(A)]
-    L = [t.x for t in m]
+    L = reverse([t.x for t in m])
     R = matrix(M,idx(L))
     R, L
 end
@@ -37,6 +32,7 @@ function solve_toric(P, X)
     N = nullspace(R)
     println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
 
+    
     B = mult_basis(N, L, X)
     println("-- Basis ", B, "  ", time()-t0, "(s)"); t0 = time()
 
