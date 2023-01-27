@@ -1,5 +1,8 @@
 export CannyEmiris
 
+"""
+ Module which provides optimised resultants constructions for multi-homogeneous systems.
+"""
 module CannyEmiris
 
 
