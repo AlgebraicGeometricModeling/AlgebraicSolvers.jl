@@ -1,5 +1,6 @@
-include("CannyEmiris.jl")
-Main.CannyEmiris
+#include("CannyEmiris.jl")
+#Main.CannyEmiris
+using AlgebraicSolvers
 
 A = [[1,1] [1,1] [1,1]]
 

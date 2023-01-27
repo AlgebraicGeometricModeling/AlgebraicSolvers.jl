@@ -1,3 +1,5 @@
+export CannyEmiris
+
 module CannyEmiris
 
 
@@ -431,3 +433,5 @@ function Multihomogeneous(A::Matrix, H::Vector)
 end
 
 end # module
+
+
