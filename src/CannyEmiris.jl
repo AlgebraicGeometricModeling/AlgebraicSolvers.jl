@@ -6,7 +6,7 @@ export CannyEmiris
 module CannyEmiris
 
 
-using LinearAlgebra
+using LinearAlgebra, SparseArrays
 
 struct TypeFunctions{T}
     a::T
@@ -27,8 +27,6 @@ export SymbCoeff
 function SymbCoeff(i::Int64, E::Vector{Int64} )
     Sym(replace("u_{" * string(i - 1) * ";" * string(E) * "}", ", "=>"|"))
 end
-
-
 
 
 function Base.iterate(p::TypeFunctions, s = [n for n = 1:p.t])
@@ -93,9 +91,8 @@ function BuildLatticeToVarZonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCo
         return LatticeToVar = Dict([])
     end
 
-    CT =typeof(Coeff(0,[1]))
-
-    SymMatrix = zeros(CT, n, n)
+    #CT =typeof(Coeff(1,[1]))
+    #SymMatrix = spzeros(CT, n, n)
 
     for i = 1:n+1
         local base = ntuple(j -> (0:A[j, i]), n)
@@ -151,9 +148,8 @@ function BuildLatticeToVarMultihomogeneous(A::Matrix, H::Matrix, Coeff::Function
         return LatticeToVar
     end
 
-    CT = typeof(Coeff(1,[0]))
-    
-    SymMatrix = zeros(CT, n, n)
+    #CT = typeof(Coeff(1,[0]))
+    #SymMatrix = spzeros(CT, n, n)
 
     for i = 1:n+1
         local base = ntuple(j -> (0:A[j, i]), n)
@@ -374,7 +370,6 @@ function Zonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCoeff)
     n = size(A)[1]
 
     CT = typeof(Coeff(1,[0]))
-   
     CannyEmirisMatrix = zeros(CT, number_of_rows, number_of_rows)
 
     for i = 1:number_of_rows
@@ -425,7 +420,6 @@ function Multihomogeneous(A::Matrix, H::Vector, Coeff::Function=SymbCoeff)
     LatticeToVar = RowsCannyEmiris(A, H, 2,Coeff)
 
     CT = typeof(Coeff(1,[0]))
-
     CannyEmirisMatrix = zeros(CT, number_of_rows, number_of_rows)
 
     for i = 1:number_of_rows
