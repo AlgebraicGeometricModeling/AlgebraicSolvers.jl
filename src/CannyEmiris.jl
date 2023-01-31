@@ -7,7 +7,6 @@ module CannyEmiris
 
 
 using LinearAlgebra
-using SymPy
 
 struct TypeFunctions{T}
     a::T
@@ -20,6 +19,16 @@ const typefunctions(elements::T, len::Integer, rc::Integer) where {T} =
 Base.IteratorSize(::TypeFunctions) = Base.HasLength()
 Base.length(p::TypeFunctions) = length(p.a)^p.t
 Base.eltype(::TypeFunctions{T}) where {T} = T
+
+
+using SymPy
+
+export SymbCoeff
+function SymbCoeff(i::Int64, E::Vector{Int64} )
+    Sym(replace("u_{" * string(i - 1) * ";" * string(E) * "}", ", "=>"|"))
+end
+
+
 
 
 function Base.iterate(p::TypeFunctions, s = [n for n = 1:p.t])
@@ -74,7 +83,7 @@ end
 
 ## Zonotopes
 
-function BuildLatticeToVarZonotopes(A::Matrix, H::Matrix)
+function BuildLatticeToVarZonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCoeff)
 
     n = size(A)[1]
 
@@ -84,15 +93,15 @@ function BuildLatticeToVarZonotopes(A::Matrix, H::Matrix)
         return LatticeToVar = Dict([])
     end
 
-    SymMatrix = zeros(Sym, n, n)
+    CT =typeof(Coeff(0,[1]))
+
+    SymMatrix = zeros(CT, n, n)
 
     for i = 1:n+1
         local base = ntuple(j -> (0:A[j, i]), n)
         v = Iterators.product(base...)
         for x in v
-            coeff = symbols(
-                "u_{" * string(i - 1) * "," * string(H * [j for j in x]) * "}",
-            )
+            coeff = Coeff(i, H * [j for j in x])
             var = coeff
             LatticeToVar = merge(
                 LatticeToVar,
@@ -131,7 +140,8 @@ function CheckMatrices(A::Matrix, H::Matrix)
     return true
 end
 
-function BuildLatticeToVarMultihomogeneous(A::Matrix, H::Matrix)
+
+function BuildLatticeToVarMultihomogeneous(A::Matrix, H::Matrix, Coeff::Function=SymbCoeff)
 
     n = size(A)[1]
 
@@ -141,16 +151,16 @@ function BuildLatticeToVarMultihomogeneous(A::Matrix, H::Matrix)
         return LatticeToVar
     end
 
-    SymMatrix = zeros(Sym, n, n)
+    CT = typeof(Coeff(1,[0]))
+    
+    SymMatrix = zeros(CT, n, n)
 
     for i = 1:n+1
         local base = ntuple(j -> (0:A[j, i]), n)
         v = Iterators.product(base...)
         for x in v
             if (all(>=(0), H * [x...]) == true)
-                coeff = symbols(
-                    "u_{" * string(i - 1) * "," * string(H * [x...]) * "}",
-                )
+                coeff = Coeff(i, H * [x...])
                 var = coeff
                 LatticeToVar = merge(
                     LatticeToVar,
@@ -213,7 +223,7 @@ end
 ## At the end writes the size of the matrix with subdivision, the size of the greedy matrix and the resultant degree
 ## The determinant of H corresponds to the difference between our resultant and the canonical
 
-function RowsCannyEmiris(A::Matrix, H::Matrix, ZM::Int)
+function RowsCannyEmiris(A::Matrix, H::Matrix, ZM::Int, Coeff::Function=SymbCoeff)
 
     LatticeToVar = Dict([])
 
@@ -236,11 +246,11 @@ function RowsCannyEmiris(A::Matrix, H::Matrix, ZM::Int)
     B = BoundMatrix(A)
 
     if (ZM == 1)
-        LatticeToVar = BuildLatticeToVarZonotopes(A, H)
+        LatticeToVar = BuildLatticeToVarZonotopes(A, H, Coeff)
     end
 
     if (ZM == 2)
-        LatticeToVar = BuildLatticeToVarMultihomogeneous(A, H)
+        LatticeToVar = BuildLatticeToVarMultihomogeneous(A, H, Coeff)
     end
 
     if (length(LatticeToVar) == 0)
@@ -345,7 +355,10 @@ function RowsCannyEmiris(A::Matrix, H::Matrix, ZM::Int)
 
 end
 
-function Zonotopes(A::Matrix, H::Matrix)
+"""
+Add some documentation: what are A, H, Coeff, ...
+"""
+function Zonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCoeff)
 
     if (CheckMatrices(A,H) == false)
         return Dict([]), Dict([])
@@ -355,12 +368,14 @@ function Zonotopes(A::Matrix, H::Matrix)
     RowToContent,
     non_mixed_indices,
     number_of_rows,
-    LatticeToVar = RowsCannyEmiris(A, H, 1)
+    LatticeToVar = RowsCannyEmiris(A, H, 1, Coeff)
 
 
     n = size(A)[1]
 
-    CannyEmirisMatrix = zeros(Sym, number_of_rows, number_of_rows)
+    CT = typeof(Coeff(1,[0]))
+   
+    CannyEmirisMatrix = zeros(CT, number_of_rows, number_of_rows)
 
     for i = 1:number_of_rows
         row_content = get(RowToLattice, i, 2)[1]
@@ -368,7 +383,7 @@ function Zonotopes(A::Matrix, H::Matrix)
         lattice_point_row = get(RowToLattice, i, 2)[2:n+1]
         for j = 1:number_of_rows
             lattice_point_column = get(RowToLattice, j, 2)[2:n+1]
-            entry = Sym(
+            entry = 
                 get(
                     LatticeToVar,
                     vcat(
@@ -376,9 +391,9 @@ function Zonotopes(A::Matrix, H::Matrix)
                         lattice_point_column - lattice_point_row +
                         row_content_support,
                     ),
-                    0,
-                ),
-            )
+                    0
+                )
+           
             CannyEmirisMatrix[i, j] = entry
         end
     end
@@ -389,7 +404,10 @@ function Zonotopes(A::Matrix, H::Matrix)
 
 end
 
-function Multihomogeneous(A::Matrix, H::Vector)
+"""
+Add some documentation: what are A, H, Coeff, ...
+"""
+function Multihomogeneous(A::Matrix, H::Vector, Coeff::Function=SymbCoeff)
 
     A, H = MultihomogeneousEmbedding(A, H)
 
@@ -404,9 +422,11 @@ function Multihomogeneous(A::Matrix, H::Vector)
     RowToContent,
     non_mixed_indices,
     number_of_rows,
-    LatticeToVar = RowsCannyEmiris(A, H, 2)
+    LatticeToVar = RowsCannyEmiris(A, H, 2,Coeff)
 
-    CannyEmirisMatrix = zeros(Sym, number_of_rows, number_of_rows)
+    CT = typeof(Coeff(1,[0]))
+
+    CannyEmirisMatrix = zeros(CT, number_of_rows, number_of_rows)
 
     for i = 1:number_of_rows
         row_content = get(RowToLattice, i, 2)[1]
@@ -414,7 +434,7 @@ function Multihomogeneous(A::Matrix, H::Vector)
         lattice_point_row = get(RowToLattice, i, 2)[2:n+1]
         for j = 1:number_of_rows
             lattice_point_column = get(RowToLattice, j, 2)[2:n+1]
-            entry = Sym(
+            entry = 
                 get(
                     LatticeToVar,
                     vcat(
@@ -422,9 +442,8 @@ function Multihomogeneous(A::Matrix, H::Vector)
                         lattice_point_column - lattice_point_row +
                         row_content_support,
                     ),
-                    0,
-                ),
-            )
+                    0
+                )
             CannyEmirisMatrix[i, j] = entry
         end
     end
