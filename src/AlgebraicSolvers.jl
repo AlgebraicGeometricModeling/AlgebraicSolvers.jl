@@ -30,6 +30,5 @@ module AlgebraicSolvers
     reduce((x,y) -> :($x; $y), V; init = :() )
   end
 
-
 end
 

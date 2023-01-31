@@ -10,13 +10,7 @@ F = [u*v-v+1.0,2u+4v-2,3*u*v+3*u-3.0]
 
 
 function Coeff0(i::Int64, E::Vector{Int64} )
-    m = prod(X.^E)
-    for j in 1:length(F[i].x)
-        if m == F[i].x[j]
-            return F[i].a[j]
-        end
-    end
-    return 0.0
+    coefficient(F[i], prod(X.^E))
 end
 
 D0 = [[1,1] [1,1] [1,1]]
