@@ -28,6 +28,6 @@ Xi = solve_macaulay(P,X)
 ## Documentation
     
 
-[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://AlgebraicGeometricModeling.github.io/AlgebraicSolvers.jl/docs)
+[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://AlgebraicGeometricModeling.github.io/AlgebraicSolvers.jl/)
     
 
