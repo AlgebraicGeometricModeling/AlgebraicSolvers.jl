@@ -3,7 +3,7 @@ The package `AlgebraicSolvers.jl` provides some tools for solving polynomial equ
 To install the package within julia:
 
 ```julia
-] add https://gitlab.inria.fr/AlgebraicGeometricModeling/AlgebraicSolvers.jl
+] add https://github.com/AlgebraicGeometricModeling/AlgebraicSolvers.jl
 ```
 
 
