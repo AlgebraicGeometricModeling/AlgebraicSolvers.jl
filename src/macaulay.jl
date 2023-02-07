@@ -8,6 +8,17 @@ function is_not_homogeneous(p)
     maximum(L) != minimum(L)
 end
 
+"""
+    matrix_macaulay(P, L, X, ish = false)
+
+ - `P` polynomial system
+ - `L` array of monomials
+ - `X` array of variables
+ - `ish` (optional) set to true if the polynomials are homogeneous
+
+Sylvester matrix of all monomial multiples mi*pi in degree ≤ d, where d=max(deg(p1),...,deg(pn)).
+
+"""
 function matrix_macaulay(P, L::AbstractVector, X, ish = false )
     d = maximum([degree(m) for m in L])
     if ish
@@ -59,11 +70,11 @@ function qr_basis(N, L, ish = false)
 end
 
 """
-   solve_macaulay(P, X, rho)
+    solve_macaulay(P, X, rho)
 
-   - `P` polynomial system
-   - `X` array of variables
-   - `rho` degree of regularity for the Sylvester matrix construction (optional)
+ - `P` polynomial system
+ - `X` array of variables
+ - `rho` degree of regularity for the Sylvester matrix construction (optional)
 
 Solve the system P=[p1, ..., pn], building Sylvester matrix of all monomial multiples mi*pi in degree ≤ ρ.
 

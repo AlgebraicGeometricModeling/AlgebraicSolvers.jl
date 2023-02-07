@@ -6,10 +6,10 @@ end
 
 """
 
-   matrix_toric(P, X)
+    matrix_toric(P, X)
 
-   - `P` polynomial system
-   - `X` array of variables
+ - `P` polynomial system
+ - `X` array of variables
 
    Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
 
@@ -36,10 +36,10 @@ end
 
 """
 
-   solve_toric(P, X)
+    solve_toric(P, X)
 
-   - `P` polynomial system
-   - `X` array of variables
+ - `P` polynomial system
+ - `X` array of variables
 
 Solve the system `P=[p1, ..., pn]`, building Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
 
