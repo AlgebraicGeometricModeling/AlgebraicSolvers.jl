@@ -1,4 +1,4 @@
-#Functions
+# Functions
 
 ```@docs 
 AlgebraicSolvers.rel_error

@@ -24,6 +24,16 @@ function toric_mat(P, A)
 end
 
 
+"""
+
+solve_toric(P, X)
+
+   - `P` polynomial system
+   - `X` array of variables
+
+Solve the system `P=[p1, ..., pn]`, building Sylvester matrix of all monomial multiples of mi*pi for mi in supp(∏_{j != i} pj).
+
+"""
 function solve_toric(P, X)
     t0 = time()
     A = [support(p) for p in P]

@@ -58,6 +58,18 @@ function qr_basis(N, L, ish = false)
     B, N*F.Q
 end
 
+"""
+   solve_macaulay(P, X, rho)
+
+   - `P` polynomial system
+   - `X` array of variables
+   - `rho` degree of regularity for the Sylvester matrix construction (optional)
+
+Solve the system P=[p1, ..., pn], building Sylvester matrix of all monomial multiples mi*pi in degree ≤ ρ.
+
+The default value for ρ is ∑ deg(pi) - n + 1.
+
+"""
 solve_macaulay = function(P, X, rho =  sum(degree(P[i])-1 for i in 1:length(P)) + 1 )
     println()
     println("-- Degrees ", map(p->degree(p),P))
