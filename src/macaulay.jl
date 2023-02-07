@@ -1,4 +1,4 @@
-export smatrix_macaulay, qr_basis, solve_macaulay
+export matrix_macaulay, qr_basis, solve_macaulay
 
 using LinearAlgebra
 using DynamicPolynomials
@@ -80,6 +80,34 @@ Solve the system P=[p1, ..., pn], building Sylvester matrix of all monomial mult
 
 The default value for ρ is ∑ deg(pi) - n + 1.
 
+Example
+-------
+```
+julia> using AlgebraicSolvers, DynamicPolynomials
+
+julia> X = @polyvar x y
+(x, y)
+
+julia> P = [2-x*y,x+y-2]
+2-element Vector{Polynomial{true, Int64}}:
+ -xy + 2
+ x + y - 2
+
+julia> solve_macaulay(P,X)
+-- Degrees [2, 1]
+-- Homogeneity false
+-- Monomials 6 degree 2   0.0(s)
+-- Macaulay matrix 4x6   6.4849853515625e-5(s)
+-- Null space 6x2   5.1021575927734375e-5(s)
+-- Qr basis 2   4.601478576660156e-5(s)
+-- Mult matrices 1.6927719116210938e-5(s)
+-- Eigen diag   9.799003601074219e-5(s)
+
+2×2 Matrix{ComplexF64}:
+ 1.0+1.0im  1.0-1.0im
+ 1.0-1.0im  1.0+1.0im
+
+```
 """
 solve_macaulay = function(P, X, rho =  sum(degree(P[i])-1 for i in 1:length(P)) + 1 )
     println()

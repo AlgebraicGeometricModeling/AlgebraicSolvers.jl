@@ -1,5 +1,6 @@
-using AlgebraicSolvers
+using AlgebraicSolvers, DynamicPolynomials
+F = filter(x ->endswith(x, "test.jl"), readdir("."))
 
-include("proj1.jl")
-include("proj2.jl")
-include("proj3.jl")
+for f in F
+    include(f)
+end

@@ -96,10 +96,10 @@ function mult_basis(N, L::Vector{T}, X) where T
         end
     end
     N0
-    F = qrfact(N0, Val{true})
+    F = qr(N0, Val(true))
     B = []
     for i in 1:size(N,2)
-        push!(B,L0[F[:p][i]])
+        push!(B,L0[F.p[i]])
     end
     B
 end
