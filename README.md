@@ -1,11 +1,14 @@
 The package `AlgebraicSolvers.jl` provides some tools for solving polynomial equations
 
+## Installation
+    
 To install the package within julia:
 
 ```julia
 ] add https://github.com/AlgebraicGeometricModeling/AlgebraicSolvers.jl
 ```
 
+## Example 
 
 To use it within julia:
 
@@ -27,7 +30,6 @@ Xi = solve_macaulay(P,X)
 
 ## Documentation
     
-
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://AlgebraicGeometricModeling.github.io/AlgebraicSolvers.jl/)
     
 
