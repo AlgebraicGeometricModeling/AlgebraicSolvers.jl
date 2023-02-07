@@ -12,7 +12,7 @@ makedocs(
          source = dir,
          pages = Any[
                      "Home" => "index.md",
-                     "Examples" => Expl,
+#                     "Examples" => Expl,
                      "Functions" => Code
                      ],
          repo = "https://github.com/AlgebraicGeometricModeling/AlgebraicSolvers.jl",

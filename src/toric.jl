@@ -1,10 +1,20 @@
-export support, toric_mat, solve_toric
+export support, matrix_toric, solve_toric
 
 function support(p::Polynomial)
     sum(monomials(p))
 end
 
-function toric_mat(P, A)
+"""
+
+   matrix_toric(P, X)
+
+   - `P` polynomial system
+   - `X` array of variables
+
+   Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
+
+"""
+function matrix_toric(P, A)
     M = []
     for i in 1:length(P)
         m = one(P[i])
@@ -26,18 +36,18 @@ end
 
 """
 
-solve_toric(P, X)
+   solve_toric(P, X)
 
    - `P` polynomial system
    - `X` array of variables
 
-Solve the system `P=[p1, ..., pn]`, building Sylvester matrix of all monomial multiples of mi*pi for mi in supp(∏_{j != i} pj).
+Solve the system `P=[p1, ..., pn]`, building Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
 
 """
 function solve_toric(P, X)
     t0 = time()
     A = [support(p) for p in P]
-    R, L = toric_mat(P, A)
+    R, L = matrix_toric(P, A)
     println("-- Toric matrix ", size(R,1),"x",size(R,2),  "   ",time()-t0, "(s)"); t0 = time()
     N = nullspace(R)
     println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()

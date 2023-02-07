@@ -1,4 +1,4 @@
-export macaulay_mat, qr_basis, solve_macaulay
+export smatrix_macaulay, qr_basis, solve_macaulay
 
 using LinearAlgebra
 using DynamicPolynomials
@@ -8,7 +8,7 @@ function is_not_homogeneous(p)
     maximum(L) != minimum(L)
 end
 
-function macaulay_mat(P, L::AbstractVector, X, ish = false )
+function matrix_macaulay(P, L::AbstractVector, X, ish = false )
     d = maximum([degree(m) for m in L])
     if ish
         Q = [monomials(X,d-degree(P[i])) for i in 1:length(P)]
@@ -82,7 +82,7 @@ solve_macaulay = function(P, X, rho =  sum(degree(P[i])-1 for i in 1:length(P)) 
     end
     t0 = time()
     println("-- Monomials ", length(L), " degree ", rho,"   ",time()-t0, "(s)"); t0 = time()
-    R = macaulay_mat(P, L, X, ish)
+    R = matrix_macaulay(P, L, X, ish)
     println("-- Macaulay matrix ", size(R,1),"x",size(R,2),  "   ",time()-t0, "(s)"); t0 = time()
     N = nullspace(R)
     println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
