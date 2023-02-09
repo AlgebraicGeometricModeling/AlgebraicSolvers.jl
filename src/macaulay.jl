@@ -18,7 +18,7 @@ end
 
 It outputs 
  - `R` the transpose of Sylvester matrix of all monomial multiples mi*pi in degree ≤ rho.
- - `L` array of monomials indexing the colmuns of `R`
+ - `L` array of monomials indexing the columns of `R`
 
 """
 function matrix_macaulay(P, X=variables(P), rho =  sum(maxdegree(P[i])-1 for i in 1:length(P)) + 1,  ish = false )
