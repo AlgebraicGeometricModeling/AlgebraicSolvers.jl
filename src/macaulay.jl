@@ -17,7 +17,7 @@ end
  - `ish` (optional) set to true if the polynomials are homogeneous
 
 It outputs 
- - `R` the transpose of Sylvester matrix of all monomial multiples mi*pi in degree ≤ d, where d=max(deg(p1),...,deg(pn)).
+ - `R` the transpose of Sylvester matrix of all monomial multiples mi*pi in degree ≤ rho.
  - `L` array of monomials indexing the colmuns of `R`
 
 """
