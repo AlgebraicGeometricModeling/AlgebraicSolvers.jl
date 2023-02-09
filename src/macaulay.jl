@@ -9,22 +9,25 @@ function is_not_homogeneous(p)
 end
 
 """
-    matrix_macaulay(P, L, X, ish = false)
+    R, L = matrix_macaulay(P, X, rho, ish = false)
 
  - `P` polynomial system
- - `L` array of monomials
- - `X` array of variables
+ - `X` (optional) array of variables
+ - `rho` (optional) maximal degree of the multiples of P
  - `ish` (optional) set to true if the polynomials are homogeneous
 
-Sylvester matrix of all monomial multiples mi*pi in degree ≤ d, where d=max(deg(p1),...,deg(pn)).
+It outputs 
+ - `R` the transpose of Sylvester matrix of all monomial multiples mi*pi in degree ≤ d, where d=max(deg(p1),...,deg(pn)).
+ - `L` array of monomials indexing the colmuns of `R`
 
 """
-function matrix_macaulay(P, L::AbstractVector, X=variables(P), ish = false )
-    d = maximum([maxdegree(m) for m in L])
+function matrix_macaulay(P, X=variables(P), rho =  sum(maxdegree(P[i])-1 for i in 1:length(P)) + 1,  ish = false )
     if ish
-        Q = [monomials(X,d-maxdegree(P[i])) for i in 1:length(P)]
+        L = [m for m in monomials(X, rho)]
+        Q = [monomials(X,rho-maxdegree(P[i])) for i in 1:length(P)]
     else
-        Q = [monomials(X,0:d-maxdegree(P[i])) for i in 1:length(P)]
+        L = [m for m in monomials(X, 0:rho)]
+        Q = [monomials(X,0:rho-maxdegree(P[i])) for i in 1:length(P)]
     end
     M = []
     for i in 1:length(P)
@@ -32,7 +35,7 @@ function matrix_macaulay(P, L::AbstractVector, X=variables(P), ish = false )
             push!(M,P[i]*m)
         end
     end
-    matrix(M,idx(L))
+    matrix(M,idx(L)), L
 end
 
 function qr_basis(N, L, ish = false)
@@ -73,8 +76,8 @@ end
     solve_macaulay(P, X, rho)
 
  - `P` polynomial system
- - `X` array of variables
- - `rho` degree of regularity for the Sylvester matrix construction (optional)
+ - `X` (optional) array of variables
+ - `rho` (optional) degree of regularity for the Sylvester matrix construction (optional)
 
 Solve the system P=[p1, ..., pn], building Sylvester matrix of all monomial multiples mi*pi in degree ≤ ρ.
 
@@ -113,15 +116,10 @@ solve_macaulay = function(P, X=variables(P), rho =  sum(maxdegree(P[i])-1 for i 
     println("-- Degrees ", map(p->maxdegree(p),P))
     ish = !any(is_not_homogeneous, P)
     println("-- Homogeneity ", ish)
-    if ish
-        L = [m for m in monomials(X, rho)]
-    else
-        L = [m for m in monomials(X, 0:rho)]
-    end
     t0 = time()
-    println("-- Monomials ", length(L), " degree ", rho,"   ",time()-t0, "(s)"); t0 = time()
-    R = matrix_macaulay(P, L, X, ish)
-    println("-- Macaulay matrix ", size(R,1),"x",size(R,2),  "   ",time()-t0, "(s)"); t0 = time()
+    #println("-- Monomials ", length(L), " degree ", rho,"   ",time()-t0, "(s)"); t0 = time()
+    R, L = matrix_macaulay(P, X, rho, ish)
+    println("-- Macaulay matrix ", size(R,1),"x",size(R,2),"   rho ",rho,"   ", time()-t0, "(s)"); t0 = time()
     N = nullspace(R)
     println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
     B, Nr = qr_basis(N, L, ish)

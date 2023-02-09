@@ -6,13 +6,14 @@ end
 
 """
 
-    R, L = matrix_toric(P)
+    R, L = matrix_toric(P, A)
 
  - `P` polynomial system
-
+ - `A` array of supports of `Pi`
+ 
 It outputs 
- - `R` the Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
- - `L` the list of monomials indexing the rows of `R`
+ - `R` transpose of the Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
+ - `L` the list of monomials indexing the colums of `R`
 
 """
 function matrix_toric(P, A = support.(P))
