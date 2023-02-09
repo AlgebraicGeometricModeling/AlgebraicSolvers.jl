@@ -79,53 +79,55 @@ function smatrix(P::Vector, M::MonomialIdx)
     sparse(J,I,V)
 end
 
+function issmall(x)
+    return abs(x) < 10^(-6)
+end
 
 function mult_basis(N, L::Vector{T}, X) where T
+    r = size(N,2)
     Idx = idx(L)
-    L0 = T[]
-    for m in L
-        I = map(t->get(Idx,t,0), [v*m for v in X])
+    I0 = Int[]
+    for i in 1:length(L)
+        I = map(t->get(Idx,t,0), [v*L[i] for v in X])
         if minimum(I)!=0
-            push!(L0,m)
+            push!(I0,i)
         end
     end
-    N0 = fill(zero(N[1,1]), size(N,2),length(L0))
-    for i in 1:length(L0)
-        for j in 1:size(N,2)
-            N0[j,i]= N[get(Idx,L0[i],0),j]
-        end
-    end
-    N0
+    N0 = transpose(N[I0, :])
     F = qr(N0, Val(true))
+    # println(I0, "   ",F.R)
+    if issmall(F.R[r,r])
+        @error "M0 not invertible" F.R[r,r]
+    end
     B = []
     for i in 1:size(N,2)
-        push!(B,L0[F.p[i]])
+        push!(B,L[I0[F.p[i]]])
     end
     B
 end
 
-function mult_matrix(B, X, K, KM, ish = false)
+function mult_matrix(B, X, N, Nidx, ish = false)
     R = []
     Idx = idx(B)
     if !ish
-        M = fill(0.0, length(B), size(K,2) )
+        M = fill(0.0, length(B), size(N,2) )
         for (m,i) in Idx.terms
-            k = get(KM, m, 0)
+            k = get(Nidx, m, 0)
             if k != 0
-                for j in 1:size(K,2)
-                    M[i,j] = K[k,j]
+                for j in 1:size(N,2)
+                    M[i,j] = N[k,j]
                 end
             end
         end
         push!(R,M)
     end
     for v in X
-        M = fill(0.0, length(B), size(K,2) )
+        M = fill(0.0, length(B), size(N,2) )
         for (m,i) in Idx.terms
-            k = get(KM, m*v, 0)
+            k = get(Nidx, m*v, 0)
             if k != 0
-                for j in 1:size(K,2)
-                    M[i,j] = K[k,j]
+                for j in 1:size(N,2)
+                    M[i,j] = N[k,j]
                 end
             end
         end
@@ -151,12 +153,12 @@ function eigdiag(M)
     # E = F[:vectors]
     # Z = E'
 
-    X = fill(Complex{Float64}(0.0),size(M0,1),length(M))
+    X = fill(Complex{Float64}(0.0),length(M),size(M0,1))
     for j in 1:length(M)
         Yj = Z*M[j]*E
         # D = Y\Yj
         for i in 1:size(M0,1)
-            X[i,j]= Yj[i,i] #(Y[:,i]\Yj[:,i])[1] #D[i,i]
+            X[j,i]= Yj[i,i] #(Y[:,i]\Yj[:,i])[1] #D[i,i]
         end
     end
     X

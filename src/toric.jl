@@ -6,15 +6,16 @@ end
 
 """
 
-    matrix_toric(P, X)
+    R, L = matrix_toric(P)
 
  - `P` polynomial system
- - `X` array of variables
 
-   Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
+It outputs 
+ - `R` the Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
+ - `L` the list of monomials indexing the rows of `R`
 
 """
-function matrix_toric(P, A)
+function matrix_toric(P, A = support.(P))
     M = []
     for i in 1:length(P)
         m = one(P[i])
@@ -44,11 +45,12 @@ end
 Solve the system `P=[p1, ..., pn]`, building Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
 
 """
-function solve_toric(P, X)
+function solve_toric(P, X=variables(P))
     t0 = time()
-    A = [support(p) for p in P]
-    R, L = matrix_toric(P, A)
+    #A = [support(p) for p in P]
+    R, L = matrix_toric(P)
     println("-- Toric matrix ", size(R,1),"x",size(R,2),  "   ",time()-t0, "(s)"); t0 = time()
+    #println("-- L ", L)
     N = nullspace(R)
     println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
 
@@ -62,7 +64,7 @@ function solve_toric(P, X)
     Xi = eigdiag(M)
     println("-- Eigen diag",  "   ",time()-t0, "(s)"); t0 = time()
 
-    for i in 1:size(Xi,1) Xi[i,:]/=Xi[i,1] end
-    Xi = Xi[:,2:size(Xi,2)]
+    for i in 1:size(Xi,2) Xi[:,i]/=Xi[1,i] end
+    Xi = Xi[2:size(Xi,1),:]
     Xi
 end

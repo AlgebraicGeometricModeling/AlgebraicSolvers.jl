@@ -4,7 +4,7 @@ using LinearAlgebra
 using DynamicPolynomials
 
 function is_not_homogeneous(p)
-    L = [degree(t) for t in p]
+    L = [maxdegree(t) for t in p]
     maximum(L) != minimum(L)
 end
 
@@ -19,12 +19,12 @@ end
 Sylvester matrix of all monomial multiples mi*pi in degree ≤ d, where d=max(deg(p1),...,deg(pn)).
 
 """
-function matrix_macaulay(P, L::AbstractVector, X, ish = false )
-    d = maximum([degree(m) for m in L])
+function matrix_macaulay(P, L::AbstractVector, X=variables(P), ish = false )
+    d = maximum([maxdegree(m) for m in L])
     if ish
-        Q = [monomials(X,d-degree(P[i])) for i in 1:length(P)]
+        Q = [monomials(X,d-maxdegree(P[i])) for i in 1:length(P)]
     else
-        Q = [monomials(X,0:d-degree(P[i])) for i in 1:length(P)]
+        Q = [monomials(X,0:d-maxdegree(P[i])) for i in 1:length(P)]
     end
     M = []
     for i in 1:length(P)
@@ -40,8 +40,8 @@ function qr_basis(N, L, ish = false)
     if ish
         L0 = filter(m->(m.z[1]>0), L)
     else
-        d  = maximum([degree(m) for m in L])
-        L0 = filter(m->degree(m)<d,L)
+        d  = maximum([maxdegree(m) for m in L])
+        L0 = filter(m->maxdegree(m)<d,L)
     end
     N0 = fill(zero(N[1,1]), size(N,2),length(L0))
     for i in 1:length(L0)
@@ -109,9 +109,8 @@ julia> solve_macaulay(P,X)
 
 ```
 """
-solve_macaulay = function(P, X, rho =  sum(degree(P[i])-1 for i in 1:length(P)) + 1 )
-    println()
-    println("-- Degrees ", map(p->degree(p),P))
+solve_macaulay = function(P, X=variables(P), rho =  sum(maxdegree(P[i])-1 for i in 1:length(P)) + 1 )
+    println("-- Degrees ", map(p->maxdegree(p),P))
     ish = !any(is_not_homogeneous, P)
     println("-- Homogeneity ", ish)
     if ish
@@ -132,10 +131,10 @@ solve_macaulay = function(P, X, rho =  sum(degree(P[i])-1 for i in 1:length(P)) 
     Xi = eigdiag(M)
     println("-- Eigen diag",  "   ",time()-t0, "(s)"); t0 = time()
     if (!ish)
-        for i in 1:size(Xi,1) Xi[i,:]/=Xi[i,1] end
-        Xi = Xi[:,2:size(Xi,2)]
+        for i in 1:size(Xi,2) Xi[:,i]/=Xi[1,i] end
+        Xi = Xi[2:size(Xi,1),:]
     else
-        for i in 1:size(Xi,1) Xi[i,:]/=norm(Xi[i,:]) end
+        for i in 1:size(Xi,2) Xi[:,i]/=norm(Xi[:,i]) end
     end
     Xi
 end
