@@ -21,11 +21,12 @@ Base.length(p::TypeFunctions) = length(p.a)^p.t
 Base.eltype(::TypeFunctions{T}) where {T} = T
 
 
-using SymPy
+#using SymPy
 
+using DynamicPolynomials
 export SymbCoeff
 function SymbCoeff(i::Int64, E::Vector{Int64} )
-    Sym(replace("u_{" * string(i - 1) * ";" * string(E) * "}", ", "=>"|"))
+    PolyVar{true}("u{" * string(i - 1) * "}" * string(E))+0 #return a polynomial
 end
 
 
@@ -85,7 +86,8 @@ function BuildLatticeToVarZonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCo
 
     n = size(A)[1]
 
-    LatticeToVar = Dict([])
+    CT = typeof(Coeff(1,[0]))
+    LatticeToVar = Dict{Vector{Int},CT}([])
 
     if (size(A)[2] != n + 1 || size(H)[1] != n || size(H)[2] != n)
         return LatticeToVar = Dict([])
@@ -142,7 +144,8 @@ function BuildLatticeToVarMultihomogeneous(A::Matrix, H::Matrix, Coeff::Function
 
     n = size(A)[1]
 
-    LatticeToVar = Dict([])
+    CT = typeof(Coeff(1,[0]))
+    LatticeToVar = Dict{Vector{Int},CT}([])
 
     if (size(A)[2] != n + 1 || size(H)[1] != n || size(H)[2] != n)
         return LatticeToVar

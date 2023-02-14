@@ -21,9 +21,8 @@ N0 = [1,1]
 CE0, PM0 = CannyEmiris.Multihomogeneous(D0, N0, NumCoeff(F,X))
 
 # With symbolic coefficients
-using SymPy
 function Coeff1(i, E)
-    Sym(replace("a_{" * string(i - 1) * ";" * string(E) * "}", ", "=>"|"))
+    PolyVar{true}("a(" * string(i) * ")" * string(E) * "")+0;
 end
 CE1, PM1 = CannyEmiris.Multihomogeneous(D0, N0, Coeff1)
 
@@ -38,6 +37,6 @@ CE2, PM2 = CannyEmiris.Zonotopes(A,H,NumCoeff(G,X))
 
 
 # With symbolic coefficients
-CE, PM = CannyEmiris.Zonotopes(A,H)
+CE, PM = CannyEmiris.Zonotopes(A,H,Coeff1)
 
 
