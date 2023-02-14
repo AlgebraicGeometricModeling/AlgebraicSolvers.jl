@@ -9,5 +9,5 @@ AlgebraicSolvers.alpha_beta
 ```
 
 ```@docs 
-AlgebraicSolvers.newton_improve
+AlgebraicSolvers.newton_improve!
 ```
