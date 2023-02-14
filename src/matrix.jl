@@ -181,17 +181,17 @@ end
 Vector of relative errors of P at the points X
 """
 function rel_error(p, Xi::Matrix, X = variables(p))
-    r = fill(0.0, size(Xi,1), length(p))
+    r = fill(0.0, length(p), size(Xi,2))
     n = size(Xi,2)
-    for i in 1: size(Xi,1)
+    for i in 1: size(Xi,2)
         for j in 1:length(p)
-            V = Xi[i,:]
-            r[i,j]= norm(subs(p[j],X=>V))
+            V = Xi[:,i]
+            r[j,i]= norm(subs(p[j],X=>V))
             s = 0.0
             for t in p[j]
                 s+= norm(subs(t, X => V))
             end
-            r[i,j]/=s
+            r[j,i]/=s
         end
     end
     r

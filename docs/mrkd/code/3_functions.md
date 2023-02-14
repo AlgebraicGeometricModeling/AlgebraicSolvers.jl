@@ -8,3 +8,6 @@ AlgebraicSolvers.rel_error
 AlgebraicSolvers.alpha_beta
 ```
 
+```@docs 
+AlgebraicSolvers.newton_improve
+```

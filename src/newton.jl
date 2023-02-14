@@ -1,9 +1,10 @@
-export der, alpha_beta, jacobian, newton_iter, newton_improve, rel_error
+export alpha_beta, jacobian, newton_iter, newton_improve!, rel_error
 
+#=
 function der(p::Polynomial{C,T}, v::PolyVar{C}) where {C,T}
     r = zero(p)
     X = variables(p)
-    i = findfirst(X, v)
+    i = findfirst(v,X)
     if i>0
         for t in p
             if t.x.z[i] >0
@@ -16,9 +17,10 @@ function der(p::Polynomial{C,T}, v::PolyVar{C}) where {C,T}
     end
     r
 end
+=#
 
 function jacobian(P,X)
-    [der(P[i],X[j]) for i in 1:length(P), j in 1:length(X)]
+    [differentiate(P[i],X[j]) for i in 1:length(P), j in 1:length(X)]
 end
 
 function newton_iter(F, J, Xi)
@@ -41,13 +43,26 @@ function newton_iter(F, J, Xi)
     Xi, err
 end
 
+"""
+```
+newton_improve!(Xi::Matrix, P, X=variables(P), eps::Float64=1.e-12, Nit::Int64 = 20)
+``` 
 
-function newton_improve(Xi::Matrix, P, X,  eps::Float64=1.e-12, Nit::Int64 = 20)
+Improve the roots `Xi` of the system `P` by Newton iteration.
+
+ - `Xi` matrix of n x r roots where n is the number of coordinates of the roots and r the number of roots
+ - `P` is the (square) system  of polynomials 
+ - `X` the array of variables
+ - `eps` threshold for stoping the iteration when the relative error is smaller.
+ - `Nit` is the maximal number of iterations per root.
+
+"""
+function newton_improve!(Xi::Matrix, P, X=variables(P),  eps::Float64=1.e-12, Nit::Int64 = 20)
     J = jacobian(P,X)
-    for j in 1: size(Xi,1)
+    for j in 1:size(Xi,2)
         i = 1
         err = 1.0
-        V = Xi[j,:]
+        V = Xi[:,j]
         while err>eps && i< Nit
             V, err = newton_iter(P, J, V)
             i+=1
@@ -55,7 +70,7 @@ function newton_improve(Xi::Matrix, P, X,  eps::Float64=1.e-12, Nit::Int64 = 20)
         if i==Nit && err>eps
             println("err: ", err, "   ", V,  " nwt: no convergence ",)
         end
-        Xi[j,:] = V
+        Xi[:,j] = V
     end
     Xi
 end
@@ -64,7 +79,7 @@ end
 """
 alpha, beta quantities for Newton convergence to an approximate zero.
 
- - If alpha < 0.125, then the approximate zero is withing 2*beta from Xi and Newton methods converges to it from Xi quadratically.
+ - If alpha < 0.125, then the approximate zero is within 2*beta from Xi and Newton methods converges to it from Xi quadratically.
  - If alpha < 0.02, then Newton method converges from all points in the ball of center Xi and radius 2*beta.
 
 """
@@ -81,7 +96,7 @@ function alpha_beta(P::Vector, Xi::Vector)
     J0 = fill(zero(Xi[1]), length(P), length(X))
     for i in 1:length(P)
         for j in 1:length(X)
-            dP = subs(der(P[i],X[j]),X=>Xi)
+            dP = subs(differentiate(P[i],X[j]),X=>Xi)
             if dP != zero(dP)
                 J0[i,j] = (dP[1]).α
             end
