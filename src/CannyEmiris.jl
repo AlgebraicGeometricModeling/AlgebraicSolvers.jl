@@ -360,7 +360,7 @@ function RowsCannyEmiris(A::Matrix, H::Matrix, ZM::Int, Coeff::Function=SymbCoef
 end
 
 """
-Add some documentation: what are A, H, Coeff, ...
+I will add some documentation: what are A, H, Coeff, ...
 """
 function Zonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCoeff)
 
@@ -386,7 +386,7 @@ function Zonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCoeff)
         lattice_point_row = get(RowToLattice, i, 2)[2:n+1]
         for j = 1:number_of_rows
             lattice_point_column = get(RowToLattice, j, 2)[2:n+1]
-            entry = 
+            entry =
                 get(
                     LatticeToVar,
                     vcat(
@@ -396,7 +396,7 @@ function Zonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCoeff)
                     ),
                     0
                 )
-           
+
             CannyEmirisMatrix[i, j] = entry
         end
     end
@@ -436,7 +436,7 @@ function Multihomogeneous(A::Matrix, H::Vector, Coeff::Function=SymbCoeff)
         lattice_point_row = get(RowToLattice, i, 2)[2:n+1]
         for j = 1:number_of_rows
             lattice_point_column = get(RowToLattice, j, 2)[2:n+1]
-            entry = 
+            entry =
                 get(
                     LatticeToVar,
                     vcat(
@@ -457,5 +457,3 @@ function Multihomogeneous(A::Matrix, H::Vector, Coeff::Function=SymbCoeff)
 end
 
 end # module
-
-
