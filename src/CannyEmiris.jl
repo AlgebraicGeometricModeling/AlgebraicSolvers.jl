@@ -22,8 +22,13 @@ Base.eltype(::TypeFunctions{T}) where {T} = T
 
 
 #using SymPy
-
 using DynamicPolynomials
+
+export NumCoeff
+NumCoeff = (F,X) -> function (i::Int64, E::Vector{Int64} )
+    coefficient(F[i], prod(X.^E))
+end
+
 export SymbCoeff
 function SymbCoeff(i::Int64, E::Vector{Int64} )
     PolyVar{true}("u{" * string(i - 1) * "}" * string(E))+0 #return a polynomial

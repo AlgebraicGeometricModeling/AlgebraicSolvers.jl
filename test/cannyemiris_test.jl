@@ -2,7 +2,7 @@
 #Main.CannyEmiris
 using AlgebraicSolvers
 
-using SparseArrays
+#using SparseArrays
 
 # With numeric coefficients
 using DynamicPolynomials
