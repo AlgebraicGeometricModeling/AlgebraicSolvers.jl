@@ -112,22 +112,29 @@ julia> solve_macaulay(P,X)
 
 ```
 """
-solve_macaulay = function(P, X=variables(P), rho =  sum(maxdegree(P[i])-1 for i in 1:length(P)) + 1 )
-    println("-- Degrees ", map(p->maxdegree(p),P))
+solve_macaulay = function(P, X=variables(P), rho =  sum(maxdegree(P[i])-1 for i in 1:length(P)) + 1;
+                          verbose::Bool = true )
+    
+    verbose && println("-- Degrees ", map(p->maxdegree(p),P))
     ish = !any(is_not_homogeneous, P)
-    println("-- Homogeneity ", ish)
+    verbose && println("-- Homogeneity ", ish)
     t0 = time()
     #println("-- Monomials ", length(L), " degree ", rho,"   ",time()-t0, "(s)"); t0 = time()
+
     R, L = matrix_macaulay(P, X, rho, ish)
-    println("-- Macaulay matrix ", size(R,1),"x",size(R,2),"   rho ",rho,"   ", time()-t0, "(s)"); t0 = time()
+    verbose && println("-- Macaulay matrix ", size(R,1),"x",size(R,2),"   rho ",rho,"   ", time()-t0, "(s)"); t0 = time()
+
     N = nullspace(R)
-    println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
+
     B, Nr = qr_basis(N, L, ish)
-    println("-- Qr basis ",  length(B), "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("-- Qr basis ",  length(B), "   ",time()-t0, "(s)"); t0 = time()
+
     M = mult_matrix(B, X, Nr, idx(L), ish)
-    println("-- Mult matrices ",time()-t0, "(s)"); t0 = time()
+    verbose && println("-- Mult matrices ",time()-t0, "(s)"); t0 = time()
+
     Xi = eigdiag(M)
-    println("-- Eigen diag",  "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("-- Eigen diag",  "   ",time()-t0, "(s)"); t0 = time()
     if (!ish)
         for i in 1:size(Xi,2) Xi[:,i]/=Xi[1,i] end
         Xi = Xi[2:size(Xi,1),:]
@@ -135,4 +142,5 @@ solve_macaulay = function(P, X=variables(P), rho =  sum(maxdegree(P[i])-1 for i 
         for i in 1:size(Xi,2) Xi[:,i]/=norm(Xi[:,i]) end
     end
     Xi
+    
 end

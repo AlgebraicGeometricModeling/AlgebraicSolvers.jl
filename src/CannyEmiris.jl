@@ -25,6 +25,15 @@ Base.eltype(::TypeFunctions{T}) where {T} = T
 using DynamicPolynomials
 
 export NumCoeff
+"""
+    Coeff = NumCoeff(F,X)
+
+ - `F` is an array of polynomials
+ - `X` is the variable vector
+
+The output `Coeff: (i,E)-> Coeff(i,E)` is a function, which returns the coefficient of
+the monomial `X^E` in the polynomial `F[i]`.
+"""
 NumCoeff = (F,X) -> function (i::Int64, E::Vector{Int64} )
     coefficient(F[i], prod(X.^E))
 end

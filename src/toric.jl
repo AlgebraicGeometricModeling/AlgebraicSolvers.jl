@@ -46,24 +46,25 @@ end
 Solve the system `P=[p1, ..., pn]`, building Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
 
 """
-function solve_toric(P, X=variables(P))
+function solve_toric(P, X=variables(P);
+                     verbose::Bool=true)
     t0 = time()
     #A = [support(p) for p in P]
     R, L = matrix_toric(P)
-    println("-- Toric matrix ", size(R,1),"x",size(R,2),  "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("-- Toric matrix ", size(R,1),"x",size(R,2),  "   ",time()-t0, "(s)"); t0 = time()
     #println("-- L ", L)
     N = nullspace(R)
-    println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
 
     
     B = mult_basis(N, L, X)
-    println("-- Basis ", B, "  ", time()-t0, "(s)"); t0 = time()
+    verbose && println("-- Basis ", B, "  ", time()-t0, "(s)"); t0 = time()
 
     M = mult_matrix(B, X, N, idx(L), false)
-    println("-- Mult matrices ",time()-t0, "(s)"); t0 = time()
+    verbose && println("-- Mult matrices ",time()-t0, "(s)"); t0 = time()
 
     Xi = eigdiag(M)
-    println("-- Eigen diag",  "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("-- Eigen diag",  "   ",time()-t0, "(s)"); t0 = time()
 
     for i in 1:size(Xi,2) Xi[:,i]/=Xi[1,i] end
     Xi = Xi[2:size(Xi,1),:]

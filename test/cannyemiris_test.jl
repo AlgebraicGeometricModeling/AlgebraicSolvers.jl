@@ -10,9 +10,6 @@ X = @polyvar u v
 F = [u*v-v, 2u-4v+2,3*u*v+3*u-6.0]
 
 
-NumCoeff = (F,X) -> function (i::Int64, E::Vector{Int64} )
-    coefficient(F[i], prod(X.^E))
-end
 
 D0 = [[1,1] [1,1] [1,1]]
 N0 = [1,1]
