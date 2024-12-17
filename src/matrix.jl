@@ -49,16 +49,18 @@ function nullspace(A::AbstractSparseMatrix)
 end
 
 function matrix(P::Vector, M::MonomialIdx)
-    A = fill(zero(coeftype(P[1])), length(P), length(M))
+    A = fill(zero(coefficients(P[1])[1]), length(P), length(M))
     j = 1
-    for p in P
-        for t in p
-            i = get(M, t.x, 0)
+    for j in 1:length(P)
+        p = P[j]
+        m = monomials(p)
+        c = coefficients(p)
+        for k in 1:length(m)
+            i = get(M, m[k], 0)
             if i != 0
-                A[j,i] = t.α
+                A[j,i] = c[k]
             end
         end
-        j+=1
     end
     A
 end
@@ -164,33 +166,25 @@ function eigdiag(M)
     X
 end
 
-function (p::Polynomial{B,T})(x::Vector) where {B,T}
-   r = zero(x[1]);
-   for m in p
-      t=m.α
-      for i in 1:length(m.x.z)
-      	 t*=x[i]^m.x.z[i]
-      end
-      r+=t
-   end
-   r
+function (p::DynamicPolynomials.Polynomial)(x::Vector)
+    return p(x...)
 end
 
 
 """
 Vector of relative errors of P at the points X
 """
-function rel_error(p, Xi::Matrix, X = variables(p))
-    r = fill(0.0, length(p), size(Xi,2))
+function rel_error(P, Xi::Matrix, X = variables(P))
+    r = fill(0.0, length(P), size(Xi,2))
     n = size(Xi,2)
     for i in 1: size(Xi,2)
-        for j in 1:length(p)
+        for j in 1:length(P)
             V = Xi[:,i]
-            r[j,i]= norm(subs(p[j],X=>V))
+            r[j,i]= norm(subs(P[j],X=>V))
             s = 0.0
-            for t in p[j]
-                s+= norm(subs(t, X => V))
-            end
+            m = monomials(P[j])
+            c = coefficients(P[j])
+            s = dot(norm.(c),norm.(subs.(m, X => V)))
             r[j,i]/=s
         end
     end

@@ -1,11 +1,11 @@
-using AlgebraicSolvers, LinearAlgebra
+using DynamicPolynomials, AlgebraicSolvers
 
-X = @Ring x y
+X = @polyvar x y
 n = length(X)
 
-A0 = [one(X),x,x^2,y,x*y]
-A1 = [one(X),x,y,x*y,x^2,x^2*y]
-A2 = [one(X),x,x^2]
+A0 = monomials(1+x+x^2+y+x*y)
+A1 = monomials(1+x+y+x*y+x^2+x^2*y)
+A2 = monomials(1+x+x^2)
 
 
 #= 

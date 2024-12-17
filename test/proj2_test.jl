@@ -1,6 +1,6 @@
-using AlgebraicSolvers
+using DynamicPolynomials, AlgebraicSolvers
 
-X = @Ring x1 x2 x3
+X = @polyvar x1 x2 x3
 n = length(X)
 
 d = 2

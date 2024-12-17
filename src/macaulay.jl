@@ -1,10 +1,10 @@
-export matrix_macaulay, qr_basis, solve_macaulay
+export matrix_macaulay, qr_basis, solve_macaulay, is_not_homogeneous
 
 using LinearAlgebra
 using DynamicPolynomials
 
 function is_not_homogeneous(p)
-    L = [maxdegree(t) for t in p]
+    L = [maxdegree(t) for t in monomials(p)]
     maximum(L) != minimum(L)
 end
 

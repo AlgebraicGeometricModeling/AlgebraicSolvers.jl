@@ -1,7 +1,7 @@
 using LinearAlgebra
-using AlgebraicSolvers
+using DynamicPolynomials, AlgebraicSolvers
 
-X = @Ring x1 x2
+X = @polyvar x1 x2
 n = length(X)
 
 d = 2

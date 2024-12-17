@@ -1,6 +1,6 @@
 export support, matrix_toric, solve_toric
 
-function support(p::Polynomial)
+function support(p::DynamicPolynomials.Polynomial)
     sum(monomials(p))
 end
 
@@ -17,20 +17,21 @@ It outputs
 
 """
 function matrix_toric(P, A = support.(P))
-    M = []
+    M = typeof(P[1])[]
+    mult = one(A[1])
     for i in 1:length(P)
-        m = one(P[i])
+        mult = one(A[1])
         for j in 1:length(A)
             if j!= i
-                m*=A[j]
+                mult*=A[j]
             end
         end
-        for t in m
-            push!(M,P[i]*t.x)
+        for m in monomials(mult)
+            push!(M,P[i]*m)
         end
     end
-    m*= A[length(A)]
-    L = reverse([t.x for t in m])
+    mult *= A[end]
+    L = reverse(monomials(mult))
     R = matrix(M,idx(L))
     R, L
 end

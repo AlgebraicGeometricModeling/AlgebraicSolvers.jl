@@ -1,4 +1,4 @@
-using AlgebraicSolvers, DynamicPolynomials
+using DynamicPolynomials, AlgebraicSolvers
 
 X = @polyvar x y
 
