@@ -1,6 +1,8 @@
-export matrix, smatrix, mult_basis, mult_matrix, eigdiag, kernel, rel_error
+export matrix, smatrix, tnf_basis, mult_matrix, eigdiag, kernel, rel_error
 
-import LinearAlgebra: nullspace
+import DynamicPolynomials: coefficients, monomials
+
+using LinearAlgebra
 using SparseArrays
 
 function kernel(A::Matrix)
@@ -17,17 +19,6 @@ function kernel(A::Matrix)
 end
 
 function nullspace(A::AbstractSparseMatrix)
-    # F = qrfact(A')
-    # R = F[:R]
-    # r=1;
-    # while r<=min(size(A,1),size(A,2)) && abs(R[r,r])> 1.e-4
-    #     r+=1
-    # end
-    # r-=1
-    # P = F[:prow]
-    # Pi = fill(0, length(P))
-    # for i in 1:length(P) Pi[P[i]]= i end
-    # F[:Q][Pi,r+1:end]
 
     F = lufact(A')
     U = F[:U]
@@ -49,6 +40,7 @@ function nullspace(A::AbstractSparseMatrix)
 end
 
 function matrix(P::Vector, M::MonomialIdx)
+    
     A = fill(zero(coefficients(P[1])[1]), length(P), length(M))
     j = 1
     for j in 1:length(P)
@@ -85,7 +77,7 @@ function issmall(x)
     return abs(x) < 10^(-6)
 end
 
-function mult_basis(N, L::Vector{T}, X) where T
+function tnf_basis(N, L::AbstractVector, X)
     r = size(N,2)
     Idx = idx(L)
     I0 = Int[]
@@ -96,10 +88,15 @@ function mult_basis(N, L::Vector{T}, X) where T
         end
     end
     N0 = transpose(N[I0, :])
-    F = qr(N0, Val(true))
+    if size(N0,1) > size(N0,2)
+        @error "Not enough monomials in the sum of the supports to compute a basis"
+        return nothing
+    end
+    F = LinearAlgebra.qr(N0, Val(true))
     # println(I0, "   ",F.R)
     if issmall(F.R[r,r])
-        @error "M0 not invertible" F.R[r,r]
+        @error "N0 not of maximal rank" F.R[r,r]
+        return nothing
     end
     B = []
     for i in 1:size(N,2)
@@ -145,7 +142,7 @@ function eigdiag(M)
     #println("... inv   ", time()-t0, "(s)"); t0=time()
     Mg = I0*M[1]
 
-    E  = eigvecs(Mg)
+    E  = LinearAlgebra.eigvecs(Mg)
     #println("... eig   ", time()-t0, "(s)"); t0=time()
     Z  = E\I0
 
@@ -174,17 +171,17 @@ end
 """
 Vector of relative errors of P at the points X
 """
-function rel_error(P, Xi::Matrix, X = variables(P))
+function rel_error(P, Xi::Matrix, X = DP.variables(P))
     r = fill(0.0, length(P), size(Xi,2))
     n = size(Xi,2)
     for i in 1: size(Xi,2)
         for j in 1:length(P)
             V = Xi[:,i]
-            r[j,i]= norm(subs(P[j],X=>V))
+            r[j,i]= norm(DP.coefficients(DP.subs(P[j],X=>V)))
             s = 0.0
-            m = monomials(P[j])
-            c = coefficients(P[j])
-            s = dot(norm.(c),norm.(subs.(m, X => V)))
+            m = DP.monomials(P[j])
+            c = DP.coefficients(P[j])
+            s = dot(norm.(c),norm.(DP.subs(m, X => V)))
             r[j,i]/=s
         end
     end

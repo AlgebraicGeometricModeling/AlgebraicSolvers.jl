@@ -1,13 +1,18 @@
 export support, matrix_toric, solve_toric
 
+import DynamicPolynomials
+
+DP = DynamicPolynomials
+
 function support(p::DynamicPolynomials.Polynomial)
     sum(monomials(p))
 end
 
 """
-
-    R, L = matrix_toric(P, A)
-
+```
+R, L = matrix_toric(P, A)
+```
+where
  - `P` polynomial system
  - `A` array of supports of `Pi`
  
@@ -26,12 +31,12 @@ function matrix_toric(P, A = support.(P))
                 mult*=A[j]
             end
         end
-        for m in monomials(mult)
+        for m in reverse(DP.monomials(mult))
             push!(M,P[i]*m)
         end
     end
     mult *= A[end]
-    L = reverse(monomials(mult))
+    L = (DP.monomials(mult))
     R = matrix(M,idx(L))
     R, L
 end
@@ -46,21 +51,38 @@ end
 
 Solve the system `P=[p1, ..., pn]`, building Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
 
+
+Example
+=======
+```
+using AlgebraicSolvers, DynamicPolynomials
+
+X = @polyvar x y
+
+P = [y - x*y + x^2,  1 + y + x + x^2]
+
+Xi = solve_toric(P)
+
+```
 """
-function solve_toric(P, X=variables(P);
+function solve_toric(P, X=DP.variables(P);
                      verbose::Bool=true)
     t0 = time()
     #A = [support(p) for p in P]
     R, L = matrix_toric(P)
     verbose && println("-- Toric matrix ", size(R,1),"x",size(R,2),  "   ",time()-t0, "(s)"); t0 = time()
     #println("-- L ", L)
-    N = nullspace(R)
+    N = LinearAlgebra.nullspace(R)
     verbose && println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
 
     
-    B = mult_basis(N, L, X)
+    B = tnf_basis(N, L, X)
+    if B == nothing
+        return nothing
+    end
     verbose && println("-- Basis ", B, "  ", time()-t0, "(s)"); t0 = time()
 
+    
     M = mult_matrix(B, X, N, idx(L), false)
     verbose && println("-- Mult matrices ",time()-t0, "(s)"); t0 = time()
 

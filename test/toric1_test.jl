@@ -16,9 +16,9 @@ p2= rand(length(A0))'*A0
 
 P = [p1,p2]
 
-Xi = solve_toric(P,X)
+Xi = solve_toric(P,X;verbose=false)
 
-println("-- sol ", Xi)
+#println("-- sol ", Xi)
 Er = rel_error(P,Xi,X)
 println("-- Rel error: ", norm(Er,Inf));
 

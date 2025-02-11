@@ -1,18 +1,10 @@
 module AlgebraicSolvers
 
-  using MultivariatePolynomials
-  using DynamicPolynomials
+#  using MultivariatePolynomials
+  import DynamicPolynomials
 
-  degree = DynamicPolynomials.maxdegree
+#  degree = DynamicPolynomials.maxdegree
 
-
-#=
-export coeftype
-  coeftype(::Type{DynamicPolynomials.Polynomial{C, T}}) where {C, T} = T
-  coeftype(p::DynamicPolynomials.Polynomial{C, T}) where {C, T} = T
-
-  Base.one(X::Vector{DynamicPolynomials.Variable}) = monomials(X,0)[1]
-=#
 
   include("mindex.jl")
   include("matrix.jl")
@@ -20,7 +12,7 @@ export coeftype
   include("newton.jl")
   include("toric.jl")
   include("CannyEmiris.jl")
-#  include("groebner.jl")
+  include("groebner.jl")
 
 
 #=

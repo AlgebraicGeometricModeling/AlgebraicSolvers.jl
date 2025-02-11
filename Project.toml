@@ -1,13 +1,15 @@
 name = "AlgebraicSolvers"
 uuid = "36cc366f-6373-477c-92c8-0345b2862178"
 authors = ["mourrain <bernard.mourrain@inria.fr>"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 DynamicPolynomials = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-MultivariatePolynomials = "102ac46a-7ee4-5c85-9060-abc95bfdeaa3"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+Groebner = "0b43b601-686d-58a3-8a1c-6623616c7cd4"
+AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
+MultivariateSeries = "08acae6c-c1bf-11e9-0c27-6b1945f8789b"
 
 [compat]
 julia = "1"

@@ -236,7 +236,7 @@ end
 ## At the end writes the size of the matrix with subdivision, the size of the greedy matrix and the resultant degree
 ## The determinant of H corresponds to the difference between our resultant and the canonical
 
-function RowsCannyEmiris(A::Matrix, H::Matrix, ZM::Int, Coeff::Function=SymbCoeff)
+function RowsCannyEmiris(A::Matrix, H::Matrix, ZM::Int, Coeff::Function=SymbCoeff; verbose = false )
 
     LatticeToVar = Dict([])
 
@@ -250,7 +250,7 @@ function RowsCannyEmiris(A::Matrix, H::Matrix, ZM::Int, Coeff::Function=SymbCoef
 
     non_mixed_indices = []
 
-    println("The rows of the Canny-Emiris matrix x^{b-a(b)}F_{i(b)} are: ")
+    verbose && println("The rows of the Canny-Emiris matrix x^{b-a(b)}F_{i(b)} are: ")
 
     n = size(A)[1]
 
@@ -328,11 +328,11 @@ function RowsCannyEmiris(A::Matrix, H::Matrix, ZM::Int, Coeff::Function=SymbCoef
                     resultant_degree += 1
                 end
 
-                print(H * [latticepoint...])
-                print("-> x^")
-                print(H * ([latticepoint...] - a))
-                print("*F_")
-                println(ib)
+                verbose && print(H * [latticepoint...])
+                verbose && print("-> x^")
+                verbose && print(H * ([latticepoint...] - a))
+                verbose && print("*F_")
+                verbose && println(ib)
 
             end
 
@@ -340,23 +340,23 @@ function RowsCannyEmiris(A::Matrix, H::Matrix, ZM::Int, Coeff::Function=SymbCoef
 
     end
 
-    println()
-    print("The size of the greedy Canny-Emiris matrix is: ")
-    println(number_of_rows)
+    verbose && println()
+    verbose && print("The size of the greedy Canny-Emiris matrix is: ")
+    verbose && println(number_of_rows)
 
-    print("The degree of the resultant is: ")
+    verbose && print("The degree of the resultant is: ")
 
-    println(resultant_degree)
+    verbose && println(resultant_degree)
 
-    println()
+    verbose && println()
 
     if (ZM == 1)
 
-        print("The sparse resultant is the ratio of the determinants of the returned matrices to the power ")
+        verbose && print("The sparse resultant is the ratio of the determinants of the returned matrices to the power ")
 
-        println(det(H))
+        verbose && println(det(H))
 
-        println()
+        verbose && println()
 
     end
 
@@ -371,7 +371,7 @@ end
 """
 I will add some documentation: what are A, H, Coeff, ...
 """
-function Zonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCoeff)
+function Zonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCoeff;verbose = true)
 
     if (CheckMatrices(A,H) == false)
         return Dict([]), Dict([])
@@ -381,7 +381,7 @@ function Zonotopes(A::Matrix, H::Matrix, Coeff::Function=SymbCoeff)
     RowToContent,
     non_mixed_indices,
     number_of_rows,
-    LatticeToVar = RowsCannyEmiris(A, H, 1, Coeff)
+    LatticeToVar = RowsCannyEmiris(A, H, 1, Coeff;verbose)
 
 
     n = size(A)[1]
@@ -419,7 +419,7 @@ end
 """
 Add some documentation: what are A, H, Coeff, ...
 """
-function Multihomogeneous(A::Matrix, H::Vector, Coeff::Function=SymbCoeff)
+function Multihomogeneous(A::Matrix, H::Vector, Coeff::Function=SymbCoeff;verbose=true)
 
     A, H = MultihomogeneousEmbedding(A, H)
 
