@@ -109,7 +109,7 @@ solve_macaulay = function(P, X=DP.variables(P), rho =  sum(DP.maxdegree(P[i])-1 
     R, L = matrix_macaulay(P, X, rho, ish)
     verbose && println("-- Macaulay matrix ", size(R,1),"x",size(R,2),"   rho ",rho,"   ", time()-t0, "(s)"); t0 = time()
 
-    N = nullspace(R)
+    N = LinearAlgebra.nullspace(R)
     verbose && println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
 
     B, Nr = qr_basis(N, L, ish)
