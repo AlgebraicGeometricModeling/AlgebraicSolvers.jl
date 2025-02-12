@@ -241,5 +241,6 @@ AlgebraicSolvers.CannyEmiris.Multihomogeneous
 
 ```@docs 
 AlgebraicSolvers.CannyEmiris.Zonotopes 
+AlgebraicSolvers.CannyEmiris.NumCoeff
 ```
 

@@ -4,19 +4,17 @@
 
 ```@docs 
 AlgebraicSolvers.matrix_macaulay
-```
-
-```@docs 
 AlgebraicSolvers.matrix_toric
+
+AlgebraicSolvers.multiplication
+AlgebraicSolvers.quotient_basis
 ```
 
 ## Solutions
 
 ```@docs 
 AlgebraicSolvers.solve_macaulay
-```
-
-```@docs 
 AlgebraicSolvers.solve_toric
+AlgebraicSolvers.solve_groebner
 ```
 
