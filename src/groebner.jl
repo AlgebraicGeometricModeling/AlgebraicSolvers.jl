@@ -1,6 +1,6 @@
-import Groebner, MultivariateSeries, AbstractAlgebra, DynamicPolynomials, LinearAlgebra
+import Groebner, MultivariateSeries, AbstractAlgebra, LinearAlgebra
 
-export multiplication, quotient_basis, solve_groebner
+export mult_matrix, quotient_basis, solve_groebner
     
 function _is_divisible_by(m,L)
     max(AbstractAlgebra.is_divisible_by.(m,L)...)
@@ -8,7 +8,7 @@ end
 
 """
 ```
-B, Idx = quotient_bais(g::AbstractVector)
+B, Idx = quotient_basis(g::AbstractVector)
 ```
 Compute the monomial basis of the quotient by `g`, as the complementary of the initial ideal of `g`, assuming that `g` is a Groebner basis and it is finite.
 It outputs: 
@@ -39,17 +39,17 @@ end
 
 """
 ```
-M = multiplication(p, g::AbstractVector, Idx::Dict)
+M = mult_matrix(p, g::AbstractVector, Idx::Dict)
 ```
-Compute the matrix of multiplication by `p` modulo `g` in the basis associated to the basis dictionary `Idx`. It is assumed that `g` is a Groebner basis and that the quotient is finite dimensional.
+Compute the matrix of multication by `p` modulo `g` in the basis associated to the basis dictionary `Idx`. It is assumed that `g` is a Groebner basis and that the quotient is finite dimensional.
 
 """
-function multiplication(p, G::AbstractVector, Idx::Dict)
+function mult_matrix(p, G::AbstractVector, Idx::Dict)
     delta = length(Idx)
     M = fill(zero(first(AbstractAlgebra.coefficients(G[1]))),delta,delta)        
     for key in Idx
         j = key.second
-        r = normal_form(key.first*p, G)
+        r = Groebner.normalform(G,key.first*p)
         for (c,m) in zip(AbstractAlgebra.coefficients(r),AbstractAlgebra.monomials(r))
             # println(c," ",m, " ", Idx[m])
             M[Idx[m],j] = c
@@ -59,11 +59,23 @@ function multiplication(p, G::AbstractVector, Idx::Dict)
 end
 
 
+"""
+```
+M = mult_matrix(p, G::AbstractVector, B::AbstractVector)
+```
+Compute the matrix of multication by `p` modulo `G` in the basis `B`. It is assumed that `G` is a Groebner basis and that the quotient is finite dimensional.
+
+"""
+function mult_matrix(p, G::AbstractVector, B)
+    Idx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:length(B)]...)
+    return mult_matrix(p, G, Idx)
+end
+
 function roots(M::AbstractVector)
     n = length(M)
     r = size(M[1],1)
     Mrnd = sum(M[i]*randn(Float64) for i in 1:n)
-    Sch  = Schur{Complex}(LinearAlgebra.schur(Mrnd))
+    Sch  = LinearAlgebra.Schur{Complex}(LinearAlgebra.schur(Mrnd))
     E = Sch.vectors
     D = [E'*m*E for m in M]
     Xi = fill(zero(D[1][1,1]),n,r)
@@ -101,7 +113,7 @@ function solve_groebner(I::AbstractVector)
     G = Groebner.groebner(I)
     R = AbstractAlgebra.parent(G[1])
     B, Bidx = quotient_basis(G)
-    M = [Float64.(multiplication(v, G, Bidx)) for v in AbstractAlgebra.gens(R)]
+    M = [Float64.(mult_matrix(v, G, Bidx)) for v in AbstractAlgebra.gens(R)]
     Xi, E, Info = MultivariateSeries.diagonalization(M)
     Xi, G, B
 end
