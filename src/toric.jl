@@ -1,4 +1,4 @@
-export support, matrix_toric, solve_toric
+export support, matrix_toric, solve_toric, tnf_toric
 
 import DynamicPolynomials
 
@@ -39,6 +39,21 @@ function matrix_toric(P, A = support.(P))
     L = (DP.monomials(mult))
     R = matrix(M,idx(L))
     R, L
+end
+
+"""
+    N, L = tnf_toric(P, A = support.(P))
+
+Compute the Truncated Normal Form of P=[p1, ..., pn], using toric resultant matrix of all monomial multiples mi*pi in degree ≤ ρ.
+
+The default value for ρ is ∑ deg(pi) - n + 1.
+
+"""
+tnf_toric = function(P,  A = support.(P))
+
+    R, L = matrix_toric(P, A)
+    N = LinearAlgebra.nullspace(R)
+    return N, L
 end
 
 

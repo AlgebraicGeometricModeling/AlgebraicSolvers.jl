@@ -1,6 +1,6 @@
 import Groebner, MultivariateSeries, AbstractAlgebra, LinearAlgebra
 
-export mult_matrix, quotient_basis, solve_groebner
+export matrix_mult, quotient_basis, solve_groebner
     
 function _is_divisible_by(m,L)
     max(AbstractAlgebra.is_divisible_by.(m,L)...)
@@ -22,7 +22,7 @@ function quotient_basis(g::AbstractVector)
     n = AbstractAlgebra.number_of_variables(R)
     L = AbstractAlgebra.leading_monomial.(g)
     D = [max(AbstractAlgebra.degree.(L,i)...) for i in 1:n]
-    p = prod((1+AbstractAlgebra.gen(R,i))^(D[i]-1) for i in 1:n)
+    t = @elapsed p = prod((1+AbstractAlgebra.gen(R,i))^(D[i]-1) for i in 1:n)
     B0 = reverse([m for m in AbstractAlgebra.monomials(p)])
     B  = typeof(B0[1])[]
     Idx = Dict{typeof(B0[1]),Int64}()
@@ -39,12 +39,12 @@ end
 
 """
 ```
-M = mult_matrix(p, g::AbstractVector, Idx::Dict)
+M = matrix_mult(p, g::AbstractVector, Idx::Dict)
 ```
 Compute the matrix of multication by `p` modulo `g` in the basis associated to the basis dictionary `Idx`. It is assumed that `g` is a Groebner basis and that the quotient is finite dimensional.
 
 """
-function mult_matrix(p, G::AbstractVector, Idx::Dict)
+function matrix_mult(p, G::AbstractVector, Idx::Dict)
     delta = length(Idx)
     M = fill(zero(first(AbstractAlgebra.coefficients(G[1]))),delta,delta)        
     for key in Idx
@@ -61,14 +61,14 @@ end
 
 """
 ```
-M = mult_matrix(p, G::AbstractVector, B::AbstractVector)
+M = matrix_mult(p, G::AbstractVector, B::AbstractVector)
 ```
 Compute the matrix of multication by `p` modulo `G` in the basis `B`. It is assumed that `G` is a Groebner basis and that the quotient is finite dimensional.
 
 """
-function mult_matrix(p, G::AbstractVector, B)
+function matrix_mult(p, G::AbstractVector, B)
     Idx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:length(B)]...)
-    return mult_matrix(p, G, Idx)
+    return matrix_mult(p, G, Idx)
 end
 
 function roots(M::AbstractVector)
@@ -89,13 +89,13 @@ end
 
 """
 ```
-Xi, G, B = solve_groebner(P::Vector)
+Xi, G, B = solve_groebner(P::Vector; verbose = false)
 ```
 Solve the system of polynomials `P`. It outputs:
 
-    -  `Xi` the complex solutions, one per colmun of `Xi`
-    -  `G` the computed Groebner basis
-    -  `B` the basis dictionary for the quotient by the ideal of the equations
+ -  `Xi` the complex solution points, one per column of `Xi`
+ -  `G` the computed Groebner basis
+ -  `B` the basis of the quotient by the ideal of the equations
 
 Example:
 ========
@@ -109,12 +109,24 @@ I = [x^2-y, x^2*y-4]
 Xi, G, B = solve_groebner(I)
 ```
 """
-function solve_groebner(I::AbstractVector)
-    G = Groebner.groebner(I)
+function solve_groebner(P::AbstractVector; verbose=false)
+    verbose && print("Computing Groebner basis ")
+    t = @elapsed G = Groebner.groebner(P)
+    verbose && println(t, "s")
+
     R = AbstractAlgebra.parent(G[1])
-    B, Bidx = quotient_basis(G)
-    M = [Float64.(mult_matrix(v, G, Bidx)) for v in AbstractAlgebra.gens(R)]
-    Xi, E, Info = MultivariateSeries.diagonalization(M)
+    verbose && print("Computing quotient basis ")
+    t = @elapsed B, Bidx = quotient_basis(G)
+    verbose && println(t, "s")
+
+    verbose && print("Computing matrices of multiplication ")
+    t = @elapsed M = [Float64.(matrix_mult(v, G, Bidx)) for v in AbstractAlgebra.gens(R)]
+    verbose && println(t, "s")
+
+    verbose && print("Joint triangularization ")
+    t = @elapsed Xi, E, Info = MultivariateSeries.diagonalization(M)
+    verbose && println(t, "s\n")
+
     Xi, G, B
 end
 

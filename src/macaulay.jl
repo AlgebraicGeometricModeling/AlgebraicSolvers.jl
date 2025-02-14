@@ -1,4 +1,4 @@
-export matrix_macaulay, qr_basis, solve_macaulay, is_not_homogeneous
+export matrix_macaulay,  tnf_macaulay, qr_basis, solve_macaulay, is_not_homogeneous
 
 import LinearAlgebra, DynamicPolynomials
 
@@ -73,11 +73,29 @@ function qr_basis(N, L, ish = false)
     B, N*F.Q
 end
 
+
+
 """
-    solve_macaulay(P, X, rho)
+    N, L = tnf_macaulay(P, rho)
+
+Compute the Truncated Normal Form of P=[p1, ..., pn], using Macaulay matrix of all monomial multiples mi*pi in degree ≤ ρ.
+
+The default value for ρ is ∑ deg(pi) - n + 1.
+
+"""
+tnf_macaulay = function(P,  rho = sum(DP.maxdegree(P[i])-1 for i in 1:length(P)) + 1)
+    
+    ish = !any(is_not_homogeneous, P)
+    X=DP.variables(P)
+    R, L = matrix_macaulay(P, X, rho, ish)
+    N = LinearAlgebra.nullspace(R)
+    return N, L
+end
+
+"""
+    Xi = solve_macaulay(P, rho)
 
  - `P` polynomial system
- - `X` (optional) array of variables
  - `rho` (optional) degree of regularity for the Sylvester matrix construction (optional)
 
 Solve the system P=[p1, ..., pn], building Sylvester matrix of all monomial multiples mi*pi in degree ≤ ρ.
@@ -93,11 +111,11 @@ X = @polyvar x y
 
 P = [2-x*y+x^2,y^2+x-2]
 
-solve_macaulay(P,X; verbose=false)
+Xi = solve_macaulay(P; verbose=false)
 
 ```
 """
-solve_macaulay = function(P, X=DP.variables(P), rho =  sum(DP.maxdegree(P[i])-1 for i in 1:length(P)) + 1;
+solve_macaulay = function(P, rho =  sum(DP.maxdegree(P[i])-1 for i in 1:length(P)) + 1;
                           verbose::Bool = true )
     
     verbose && println("-- Degrees ", map(p->DP.maxdegree(p),P))
@@ -106,6 +124,7 @@ solve_macaulay = function(P, X=DP.variables(P), rho =  sum(DP.maxdegree(P[i])-1 
     t0 = time()
     #println("-- Monomials ", length(L), " degree ", rho,"   ",time()-t0, "(s)"); t0 = time()
 
+    X = DP.variables(P)
     R, L = matrix_macaulay(P, X, rho, ish)
     verbose && println("-- Macaulay matrix ", size(R,1),"x",size(R,2),"   rho ",rho,"   ", time()-t0, "(s)"); t0 = time()
 
