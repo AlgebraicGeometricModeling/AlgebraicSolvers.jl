@@ -25,7 +25,7 @@ AlgebraicSolvers.tnf_macaulay
 AlgebraicSolvers.tnf_toric
 ```
 
-# Linear algebra in quotient 
+# Linear algebra in the quotient 
 
 ```@docs 
 AlgebraicSolvers.matrix_mult
