@@ -12,15 +12,15 @@ makedocs(
          source = dir,
          pages = Any[
                      "Home" => "index.md",
-#                     "Examples" => Expl,
-                     "Functions" => Code
-                     ],
-         repo = "https://github.com/AlgebraicGeometricModeling/AlgebraicSolvers.jl",
+                     "Functions" => Code,
+                     "Examples" => Expl,             
+         ],
+         repo = Remotes.GitHub("AlgebraicGeometricModeling", "AlgebraicSolvers.jl"),
          doctest = false
          )
 
 deploydocs(
-           repo = "github.com/AlgebraicGeometricModeling/AlgebraicSolvers.jl.git",
+           repo = Remotes.GitHub("AlgebraicGeometricModeling", "AlgebraicSolvers.jl"),
            target = "site"
            )
 
