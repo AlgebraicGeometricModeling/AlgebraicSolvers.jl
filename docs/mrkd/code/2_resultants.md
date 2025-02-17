@@ -1,4 +1,24 @@
-# Resultants
+# Resultants matrices
+
+Different constructions of resultant matrices are available, including projective or Macaulay resultant matrices, toric resultant matrices.
+
+
+
+## Projective resultant matrices
+
+```@docs 
+AlgebraicSolvers.matrix_macaulay
+```
+
+## Non-minimal Toric resultant matrices
+
+The resultant matrix is constructed by choosing the monomial multipliers in the sum of the support of the other polynomials.
+
+```@docs 
+AlgebraicSolvers.matrix_toric
+```
+
+## Toric resultants
 
 Greedy implementation of the Canny-Emiris formula as it was presented in "A Greedy Approach to the Canny-Emiris Formula" with the introduction of type functions. The underlying system of equations is written as:
 

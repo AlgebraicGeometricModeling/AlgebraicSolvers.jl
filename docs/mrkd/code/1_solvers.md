@@ -18,15 +18,6 @@ AlgebraicSolvers.solve_groebner
 ```
 
 
-# Resultant matrices
-
-Different constructions of resultant matrices are available, including projective or Macaulay resultant matrices, toric resultant matrices.
-
-```@docs 
-AlgebraicSolvers.matrix_macaulay
-AlgebraicSolvers.matrix_toric
-```
-
 # Truncated  Normal Forms
 
 ```@docs 
