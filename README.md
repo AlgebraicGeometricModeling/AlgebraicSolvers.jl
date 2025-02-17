@@ -1,8 +1,17 @@
 The package `AlgebraicSolvers.jl` provides some tools for solving polynomial equations
 
 ## Installation
-    
-To install the package within julia:
+
+To install the registered version:
+```julia
+] add AlgebraicSolvers
+```
+or 
+```julia
+using Pkg; Pkg.add("AlgebraicSolvers")
+```
+
+To install the last version of the package:
 
 ```julia
 ] add https://github.com/AlgebraicGeometricModeling/AlgebraicSolvers.jl
@@ -24,7 +33,7 @@ s = length(M)
 
 P = randn(n,s)*M
 
-Xi = solve_macaulay(P,X)
+Xi = solve_macaulay(P)
 
 ```
 
