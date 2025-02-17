@@ -104,9 +104,9 @@ using AbstractAlgebra
 
 R, (x,y) = QQ["x","y"]
 
-I = [x^2-y, x^2*y-4]
+P = [x^2-y, x^2*y-4]
 
-Xi, G, B = solve_groebner(I)
+Xi, G, B = solve_groebner(P)
 ```
 """
 function solve_groebner(P::AbstractVector; verbose=false)

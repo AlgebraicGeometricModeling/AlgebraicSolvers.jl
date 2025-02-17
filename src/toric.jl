@@ -31,12 +31,12 @@ function matrix_toric(P, A = support.(P))
                 mult*=A[j]
             end
         end
-        for m in reverse(DP.monomials(mult))
+        for m in reverse(DynamicPolynomials.monomials(mult))
             push!(M,P[i]*m)
         end
     end
     mult *= A[end]
-    L = (DP.monomials(mult))
+    L = (DynamicPolynomials.monomials(mult))
     R = matrix(M,idx(L))
     R, L
 end
@@ -59,7 +59,7 @@ end
 
 """
 
-    solve_toric(P, X)
+    solve_toric(P; verbose = false)
 
  - `P` polynomial system
  - `X` array of variables
@@ -80,8 +80,7 @@ Xi = solve_toric(P)
 
 ```
 """
-function solve_toric(P, X=DP.variables(P);
-                     verbose::Bool=true)
+function solve_toric(P; verbose::Bool=false)
     t0 = time()
     #A = [support(p) for p in P]
     R, L = matrix_toric(P)
@@ -90,7 +89,7 @@ function solve_toric(P, X=DP.variables(P);
     N = LinearAlgebra.nullspace(R)
     verbose && println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
 
-    
+    X = DynamicPolynomials.variables(P);
     B = tnf_basis(N, L, X)
     if B == nothing
         return nothing

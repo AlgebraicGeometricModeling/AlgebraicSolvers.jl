@@ -93,7 +93,7 @@ tnf_macaulay = function(P,  rho = sum(DP.maxdegree(P[i])-1 for i in 1:length(P))
 end
 
 """
-    Xi = solve_macaulay(P, rho)
+    Xi = solve_macaulay(P, rho ; verbose = false)
 
  - `P` polynomial system
  - `rho` (optional) degree of regularity for the Sylvester matrix construction (optional)
@@ -111,7 +111,7 @@ X = @polyvar x y
 
 P = [2-x*y+x^2,y^2+x-2]
 
-Xi = solve_macaulay(P; verbose=false)
+Xi = solve_macaulay(P)
 
 ```
 """
