@@ -14,4 +14,8 @@ It proceeds as follows:
 Pages = map(file -> joinpath("code", file), filter(x ->endswith(x, "md"), readdir("code"))) 
 ```
 
-        
+
+## Dependencies
+
+For the solver based on Groebner basis computation, we are use the package `Grobner.jl`.
+

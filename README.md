@@ -32,4 +32,3 @@ Xi = solve_macaulay(P,X)
     
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://AlgebraicGeometricModeling.github.io/AlgebraicSolvers.jl/)
     
-
