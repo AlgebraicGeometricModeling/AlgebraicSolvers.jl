@@ -116,7 +116,7 @@ Xi = solve_macaulay(P; verbose=false)
 ```
 """
 solve_macaulay = function(P, rho =  sum(DP.maxdegree(P[i])-1 for i in 1:length(P)) + 1;
-                          verbose::Bool = true )
+                          verbose::Bool = false )
     
     verbose && println("-- Degrees ", map(p->DP.maxdegree(p),P))
     ish = !any(is_not_homogeneous, P)
@@ -126,6 +126,7 @@ solve_macaulay = function(P, rho =  sum(DP.maxdegree(P[i])-1 for i in 1:length(P
 
     X = DP.variables(P)
     R, L = matrix_macaulay(P, X, rho, ish)
+    
     verbose && println("-- Macaulay matrix ", size(R,1),"x",size(R,2),"   rho ",rho,"   ", time()-t0, "(s)"); t0 = time()
 
     N = LinearAlgebra.nullspace(R)
