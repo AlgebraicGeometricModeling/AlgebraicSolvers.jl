@@ -1,7 +1,10 @@
 import Groebner, MultivariateSeries, AbstractAlgebra, LinearAlgebra
 
-export matrix_mult, quotient_basis, solve_groebner
-    
+AA = AbstractAlgebra
+
+export matrix_mult, solve_groebner
+
+#==
 function _is_divisible_by(m,L)
     max(AbstractAlgebra.is_divisible_by.(m,L)...)
 end
@@ -36,6 +39,8 @@ function quotient_basis(g::AbstractVector)
     end
     B, Idx
 end
+==#
+
 
 """
 ```
@@ -49,10 +54,15 @@ function matrix_mult(p, G::AbstractVector, Idx::Dict)
     M = fill(zero(first(AbstractAlgebra.coefficients(G[1]))),delta,delta)        
     for key in Idx
         j = key.second
-        r = Groebner.normalform(G,key.first*p)
-        for (c,m) in zip(AbstractAlgebra.coefficients(r),AbstractAlgebra.monomials(r))
+        m = key.first*p
+        if (k = get(Idx,m,0)) == 0
+            r = Groebner.normalform(G,key.first*p)
+            for (cr,mr) in zip(AbstractAlgebra.coefficients(r),AbstractAlgebra.monomials(r))
             # println(c," ",m, " ", Idx[m])
-            M[Idx[m],j] = c
+                M[Idx[mr],j] = cr
+            end
+        else
+            M[k,j] = one(M[1,1])
         end
     end
     M
@@ -100,7 +110,7 @@ Solve the system of polynomials `P`. It outputs:
 Example:
 ========
 ```
-using AbstractAlgebra
+using AbstractAlgebra, AlgebraicSolvers
 
 R, (x,y) = QQ["x","y"]
 
@@ -116,11 +126,13 @@ function solve_groebner(P::AbstractVector; verbose=false)
 
     R = AbstractAlgebra.parent(G[1])
     verbose && print("Computing quotient basis ")
-    t = @elapsed B, Bidx = quotient_basis(G)
+    t = @elapsed B = sort(Groebner.quotient_basis(G))
     verbose && println(t, "s")
 
     verbose && print("Computing matrices of multiplication ")
-    t = @elapsed M = [Float64.(matrix_mult(v, G, Bidx)) for v in AbstractAlgebra.gens(R)]
+    Idx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:length(B)]...)
+    
+    t = @elapsed M = [Float64.(matrix_mult(v, G, Idx)) for v in AbstractAlgebra.gens(R)]
     verbose && println(t, "s")
 
     verbose && print("Joint triangularization ")
