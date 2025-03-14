@@ -39,7 +39,7 @@ function nullspace(A::AbstractSparseMatrix)
 
 end
 
-function matrix(P::Vector, M::MonomialIdx)
+function matrix(P::Vector, M::Dict)
     
     A = fill(zero(coefficients(P[1])[1]), length(P), length(M))
     j = 1
@@ -57,7 +57,7 @@ function matrix(P::Vector, M::MonomialIdx)
     A
 end
 
-function smatrix(P::Vector, M::MonomialIdx)
+function smatrix(P::Vector, M::Dict)
     I = Int64[]
     J = Int64[]
     T = coeftype(P[1])
