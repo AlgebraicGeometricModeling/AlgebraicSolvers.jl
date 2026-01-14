@@ -1,9 +1,12 @@
-export matrix, smatrix, tnf_basis, mult_matrix, eigdiag, kernel, rel_error
+export matrix, smatrix, tnf_basis, mult_matrix, eigdiag, kernel, rel_error, idx
 
 import DynamicPolynomials: coefficients, monomials
 
-using LinearAlgebra
-using SparseArrays
+using LinearAlgebra, SparseArrays
+
+function idx(L)
+    return Dict{typeof(L[1]), Int64}(L[i]=> i for i in 1:length(L))
+end
 
 function kernel(A::Matrix)
     U,S,V = svd(A)
@@ -60,8 +63,8 @@ end
 function smatrix(P::Vector, M::Dict)
     I = Int64[]
     J = Int64[]
-    T = coeftype(P[1])
-    V = T[]
+    V = coeftype(P[1])[]
+    
     for (p,j) in zip(P,1:length(P))
         for t in p
             i = get(M, t.x, 0)
@@ -95,7 +98,7 @@ function tnf_basis(N, L::AbstractVector, X)
     F = LinearAlgebra.qr(N0, Val(true))
     # println(I0, "   ",F.R)
     if issmall(F.R[r,r])
-        @error "N0 not of maximal rank" F.R[r,r]
+        @error "N0 not of maximal rank r=$r" F.R[r,r]
         return nothing
     end
     B = []
@@ -110,7 +113,9 @@ function mult_matrix(B, X, N, Nidx, ish = false)
     Idx = idx(B)
     if !ish
         M = fill(0.0, length(B), size(N,2) )
-        for (m,i) in Idx.terms
+        for t in Idx
+            m = t.first
+            i = t.second
             k = get(Nidx, m, 0)
             if k != 0
                 for j in 1:size(N,2)
@@ -122,7 +127,9 @@ function mult_matrix(B, X, N, Nidx, ish = false)
     end
     for v in X
         M = fill(0.0, length(B), size(N,2) )
-        for (m,i) in Idx.terms
+        for t in Idx
+            m = t.first
+            i = t.second
             k = get(Nidx, m*v, 0)
             if k != 0
                 for j in 1:size(N,2)
@@ -167,6 +174,28 @@ function (p::DynamicPolynomials.Polynomial)(x::Vector)
     return p(x...)
 end
 
+export matrix_multipliers
+"""
+     M, L =  matrix_multipliers(P::AbstractVector, M::AbstractVector)
+
+Compute the matrix `M` of coefficients of the polynomials `P[i]*M[j]` and the liste `L` of monomials
+which appear in these polynomials. A row of `M` represents a polynomial as a vector of coefficients with respect to the monomials in `L`.
+
+"""
+function matrix_multipliers(P::AbstractVector, M::AbstractVector)
+    X = DP.variables(P)
+    RM = typeof(P[1])[]
+    L = Set{typeof(DP.Monomial(X[1]))}()
+    for i in 1:length(P)
+        for m in M[i]
+            RM = vcat(RM,P[i]*m)
+            mns = DP.monomials(P[i]*m)
+            L = union(L,Set(mns))
+        end
+    end
+    L = sort(collect(L))
+    matrix(RM, idx(L)), L
+end
 
 """
 Vector of relative errors of P at the points X

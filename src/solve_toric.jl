@@ -1,4 +1,4 @@
-export support, matrix_toric, solve_toric, tnf_toric
+export support, toric_matrix, solve, toric_tnf
 
 import DynamicPolynomials
 
@@ -10,7 +10,7 @@ end
 
 """
 ```
-R, L = matrix_toric(P, A)
+R, L = toric_matrix(P, A)
 ```
 where
  - `P` polynomial system
@@ -21,7 +21,7 @@ It outputs
  - `L` the list of monomials indexing the colums of `R`
 
 """
-function matrix_toric(P, A = support.(P))
+function toric_matrix(P, A = support.(P))
     M = typeof(P[1])[]
     mult = one(A[1])
     for i in 1:length(P)
@@ -42,24 +42,29 @@ function matrix_toric(P, A = support.(P))
 end
 
 """
-    N, L = tnf_toric(P, A = support.(P))
+    N, L = toric_tnf(P, A = support.(P))
 
 Compute the Truncated Normal Form of P=[p1, ..., pn], using toric resultant matrix of all monomial multiples mi*pi in degree ≤ ρ.
 
 The default value for ρ is ∑ deg(pi) - n + 1.
 
 """
-tnf_toric = function(P,  A = support.(P))
+toric_tnf = function(P,  A = support.(P))
 
-    R, L = matrix_toric(P, A)
+    R, L = toric_matrix(P, A)
     N = LinearAlgebra.nullspace(R)
     return N, L
 end
 
+export Toric
+
+struct Toric
+
+end
 
 """
 
-    solve_toric(P; verbose = false)
+    solve(M::Toric, P; verbose = false)
 
  - `P` polynomial system
  - `X` array of variables
@@ -76,14 +81,14 @@ X = @polyvar x y
 
 P = [y - x*y + x^2,  1 + y + x + x^2]
 
-Xi = solve_toric(P)
+Xi = solve(Toric(), P)
 
 ```
 """
-function solve_toric(P; verbose::Bool=false)
+function solve(M::Toric, P; verbose::Bool=false)
     t0 = time()
     #A = [support(p) for p in P]
-    R, L = matrix_toric(P)
+    R, L = toric_matrix(P)
     verbose && println("-- Toric matrix ", size(R,1),"x",size(R,2),  "   ",time()-t0, "(s)"); t0 = time()
     #println("-- L ", L)
     N = LinearAlgebra.nullspace(R)
@@ -106,4 +111,8 @@ function solve_toric(P; verbose::Bool=false)
     for i in 1:size(Xi,2) Xi[:,i]/=Xi[1,i] end
     Xi = Xi[2:size(Xi,1),:]
     Xi
+end
+
+function solve(::Val{:toric}, P; verbose::Bool = false )
+    solve(Toric(),P; verbose=verbose)
 end

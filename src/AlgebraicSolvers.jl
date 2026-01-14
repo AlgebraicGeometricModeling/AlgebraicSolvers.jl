@@ -1,10 +1,7 @@
 module AlgebraicSolvers
 
-  using DynamicPolynomials
-#import DynamicPolynomials as DP
+  using DynamicPolynomials  #import DynamicPolynomials as DP
   import LinearAlgebra, Groebner, MultivariateSeries,  AbstractAlgebra
-
-
 
   include("matrix.jl")
   include("newton.jl")
@@ -14,7 +11,10 @@ module AlgebraicSolvers
   include("CannyEmiris.jl")
   include("solve_groebner.jl")
 
-
+  export solve
+  function solve(mth::Symbol, P::Vector; verbose::Bool = false)
+      solve(Val(mth),P;verbose=true)  
+  end
 
 end
 
