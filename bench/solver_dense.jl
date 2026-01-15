@@ -1,3 +1,5 @@
+using DynamicPolynomials, AlgebraicSolvers, LinearAlgebra
+
 function solver_dense(d,X)
 
     n = length(X)
@@ -7,9 +9,9 @@ function solver_dense(d,X)
 
     P = (2*rand(n,s)-fill(1.0,n,s))*M
     t0 =time()
-    Xi = solve_macaulay(P,X)
+    Xi = solve(Macaulay(), P)
     t1= time()-t0
-    println("-- Number of solutions: ",size(Xi,1),"    ",t1,"(s)" )
+    println("-- Number of solutions: ", size(Xi,2),"    ",t1,"(s)" )
     Er = rel_error(P,Xi)
     println("-- Rel error: ", norm(Er,Inf))
     println()

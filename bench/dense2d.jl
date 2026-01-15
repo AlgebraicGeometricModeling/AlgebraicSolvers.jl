@@ -1,8 +1,6 @@
-using AlgebraicSolvers
-
 include("solver_dense.jl")
 
-X = @Ring x1 x2
+X = @polyvar x1 x2
 
 init(X)
     
