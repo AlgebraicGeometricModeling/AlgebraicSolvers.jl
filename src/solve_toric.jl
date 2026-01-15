@@ -1,16 +1,30 @@
-export support, toric_matrix, solve, toric_tnf
+export support, solve, tnf, quotient_basis, mult_matrices
 
 import DynamicPolynomials
 
 DP = DynamicPolynomials
 
+export Toric
+
+"""
+Structure for the construction of Toric resultant solvers. It store
+  - `supports :: Function  P->` supports of the polynomials `P` (default: `P->AlgebraicSolvers.support.(P)` )  
+"""
+struct Toric
+   supports::Function
+end
+
 function support(p::DynamicPolynomials.Polynomial)
     sum(monomials(p))
 end
 
+function Toric()
+    Toric(P->A = support.(P))
+end
+
 """
 ```
-R, L = toric_matrix(P, A)
+R, L = res_matrix(Mth::Toric, P)
 ```
 where
  - `P` polynomial system
@@ -21,8 +35,9 @@ It outputs
  - `L` the list of monomials indexing the colums of `R`
 
 """
-function toric_matrix(P, A = support.(P))
+function res_matrix(Mth::Toric, P)
     M = typeof(P[1])[]
+    A = Mth.supports(P)
     mult = one(A[1])
     for i in 1:length(P)
         mult = one(A[1])
@@ -40,79 +55,9 @@ function toric_matrix(P, A = support.(P))
     R = matrix(M,idx(L))
     R, L
 end
+s
+function res_matrix(::Val{:toric}, P)  res_matrix(Toric(),P) end
 
-"""
-    N, L = toric_tnf(P, A = support.(P))
+function tnf(::Val{:toric}, P)  tnf(Toric(),P) end
 
-Compute the Truncated Normal Form of P=[p1, ..., pn], using toric resultant matrix of all monomial multiples mi*pi in degree ≤ ρ.
-
-The default value for ρ is ∑ deg(pi) - n + 1.
-
-"""
-toric_tnf = function(P,  A = support.(P))
-
-    R, L = toric_matrix(P, A)
-    N = LinearAlgebra.nullspace(R)
-    return N, L
-end
-
-export Toric
-
-struct Toric
-
-end
-
-"""
-
-    solve(M::Toric, P; verbose = false)
-
- - `P` polynomial system
- - `X` array of variables
-
-Solve the system `P=[p1, ..., pn]`, building Sylvester matrix of all monomial multiples mi*pi for mi in supp(∏_{j != i} pj).
-
-
-Example
-=======
-```
-using AlgebraicSolvers, DynamicPolynomials
-
-X = @polyvar x y
-
-P = [y - x*y + x^2,  1 + y + x + x^2]
-
-Xi = solve(Toric(), P)
-
-```
-"""
-function solve(M::Toric, P; verbose::Bool=false)
-    t0 = time()
-    #A = [support(p) for p in P]
-    R, L = toric_matrix(P)
-    verbose && println("-- Toric matrix ", size(R,1),"x",size(R,2),  "   ",time()-t0, "(s)"); t0 = time()
-    #println("-- L ", L)
-    N = LinearAlgebra.nullspace(R)
-    verbose && println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
-
-    X = DynamicPolynomials.variables(P);
-    B = tnf_basis(N, L, X)
-    if B == nothing
-        return nothing
-    end
-    verbose && println("-- Basis ", B, "  ", time()-t0, "(s)"); t0 = time()
-
-    
-    M = mult_matrix(B, X, N, idx(L), false)
-    verbose && println("-- Mult matrices ",time()-t0, "(s)"); t0 = time()
-
-    Xi = eigdiag(M)
-    verbose && println("-- Eigen diag",  "   ",time()-t0, "(s)"); t0 = time()
-
-    for i in 1:size(Xi,2) Xi[:,i]/=Xi[1,i] end
-    Xi = Xi[2:size(Xi,1),:]
-    Xi
-end
-
-function solve(::Val{:toric}, P; verbose::Bool = false )
-    solve(Toric(),P; verbose=verbose)
-end
+function solve(::Val{:toric}, P; verbose::Bool = false )  solve(Toric(),P; verbose=verbose) end

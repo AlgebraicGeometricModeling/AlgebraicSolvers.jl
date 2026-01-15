@@ -1,5 +1,10 @@
 using LinearAlgebra, AbstractAlgebra, AlgebraicSolvers, Groebner
 
+GB = Grobner((P,X) -> Groebner.groebner(P, ordering = Groebner.DegRevLex(X)),
+              (p,G) -> Groebner.normalform(p,G),
+              G -> Groebner.quotient_basis(G)
+             )
+
 R, (x,y) = QQ["x","y"]
 
 n = 2
@@ -13,7 +18,7 @@ P = [
     sum(m*rand(Int64) for m in M)
 ]
 
-Xi,G,B = solve_groebner(P)
+Xi,G,B = solve(GB,P)
 #println("-- sol ", Xi)
 
 #Er = rel_error(P,Xi,X)

@@ -105,7 +105,7 @@ function tnf_basis(N, L::AbstractVector, X)
     for i in 1:size(N,2)
         push!(B,L[I0[F.p[i]]])
     end
-    B
+    sort(B)
 end
 
 function mult_matrix(B, X, N, Nidx, ish = false)
@@ -174,7 +174,7 @@ function (p::DynamicPolynomials.Polynomial)(x::Vector)
     return p(x...)
 end
 
-export matrix_multipliers
+export res_matrix
 """
      M, L =  matrix_multipliers(P::AbstractVector, M::AbstractVector)
 
@@ -182,7 +182,7 @@ Compute the matrix `M` of coefficients of the polynomials `P[i]*M[j]` and the li
 which appear in these polynomials. A row of `M` represents a polynomial as a vector of coefficients with respect to the monomials in `L`.
 
 """
-function matrix_multipliers(P::AbstractVector, M::AbstractVector)
+function res_matrix(P::AbstractVector, M::AbstractVector)
     X = DP.variables(P)
     RM = typeof(P[1])[]
     L = Set{typeof(DP.Monomial(X[1]))}()
@@ -216,3 +216,4 @@ function rel_error(P, Xi::Matrix, X = DP.variables(P))
     end
     r
 end
+

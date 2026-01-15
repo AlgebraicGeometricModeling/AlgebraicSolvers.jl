@@ -2,21 +2,19 @@
 
 Different constructions of resultant matrices are available, including projective or Macaulay resultant matrices, toric resultant matrices.
 
-
-
-## Projective resultant matrices
-
 ```@docs 
-AlgebraicSolvers.matrix_macaulay
+AlgebraicSolvers.res_matrix
 ```
 
-## Non-minimal Toric resultant matrices
 
-The resultant matrix is constructed by choosing the monomial multipliers in the sum of the support of the other polynomials.
+The following function allows to construct the coefficient matrix of monomial multipliers:
+
+
 
 ```@docs 
-AlgebraicSolvers.matrix_toric
+AlgebraicSolvers.matrix_multipliers
 ```
+
 
 ## Toric resultants
 

@@ -1,9 +1,30 @@
-export macaulay_matrix,  tnf_macaulay, qr_basis, solve_macaulay, is_not_homogeneous
+export res_matrix,  tnf, qr_basis, solve, is_not_homogeneous, quotient_basis
 
 import LinearAlgebra, DynamicPolynomials
 
 DP = DynamicPolynomials
 
+export Macaulay
+
+"""
+Structure for the construction of Macaulay resultant solvers. It stores
+  - `degree :: Function P->` degree of regularity +1 (default: `P ->  sum(DynamicPolynomials.maxdegree(P[i])-1 for i in 1:length(P)) + 1`) 
+  -  `is_homogeneous :: Function P->` boolean testing if the system is homogeneous or not (default: `P -> !any(AlgebraicSolvers.is_not_homogeneous, P)`)
+
+
+
+
+"""
+struct Macaulay
+    degree :: Function 
+    is_homogeneous :: Function 
+end
+
+
+function Macaulay()
+    Macaulay(P ->  sum(DP.maxdegree(P[i])-1 for i in 1:length(P)) + 1,
+             P -> !any(is_not_homogeneous, P))
+end
 
 
 function is_not_homogeneous(p)
@@ -12,7 +33,7 @@ function is_not_homogeneous(p)
 end
 
 """
-    R, L = macaulay_matrix(P, X, rho, ish = false)
+    R, L = res_matrix(Mth::Macaulay, P, X, rho, ish = false)
 
  - `P` polynomial system
  - `X` (optional) array of variables
@@ -24,7 +45,7 @@ It outputs
  - `L` array of monomials indexing the columns of `R`
 
 """
-function macaulay_matrix(P, X=DP.variables(P), rho =  sum(DP.maxdegree(P[i])-1 for i in 1:length(P)) + 1,  ish = false )
+function res_matrix(Mth::Macaulay, P, X=DP.variables(P), rho =  Mth.degree(P),  ish = Mth.is_homogeneous(P) )
     if ish
         L = [m for m in DP.monomials(X, rho)]
         Q = [DP.monomials(X,rho-DP.maxdegree(P[i])) for i in 1:length(P)]
@@ -76,41 +97,16 @@ function qr_basis(N, L, ish = false)
 end
 
 
-
-"""
-    N, L = tnf_macaulay(P, rho)
-
-Compute the Truncated Normal Form of P=[p1, ..., pn], using Macaulay matrix of all monomial multiples mi*pi in degree ≤ ρ.
-
-The default value for ρ is ∑ deg(pi) - n + 1.
-
-"""
-tnf_macaulay = function(P,  rho = sum(DP.maxdegree(P[i])-1 for i in 1:length(P)) + 1)
-    
-    ish = !any(is_not_homogeneous, P)
-    X=DP.variables(P)
-    R, L = macaulay_matrix(P, X, rho, ish)
-    N = LinearAlgebra.nullspace(R)
-    return N, L
-end
-
-export Macaulay
-
-struct Macaulay
-    degree :: Function 
-    is_homogeneous :: Function 
-end
+function tnf(::Val{:macaulay}, P) tnf(Macaulay(),P) end
+function quotient_basis(::Val{:macaulay}, P) quotient_basis(Macaulay(),P) end
+function solve(::Val{:macaulay}, P; verbose::Bool = false ) solve(Macaulay(),P; verbose=verbose) end
 
 
-function Macaulay()
-    Macaulay(P ->  sum(DP.maxdegree(P[i])-1 for i in 1:length(P)) + 1,
-             P -> !any(is_not_homogeneous, P))
-end
 """
     Xi = solve(Macaulay(), P)
 
  - `P` polynomial system
- - `rho` (optional) degree of regularity for the Sylvester matrix construction (optional)
+
 
 Solve the system P=[p1, ..., pn], building Sylvester matrix of all monomial multiples mi*pi in degree ≤ ρ.
 
@@ -129,19 +125,19 @@ Xi = solve(Macaulay(), P)
 
 ```
 """
-function solve(M::Macaulay, P;
+function solve(Mth::Macaulay, P;
                verbose::Bool = false )
 
-    rho  = M.degree(P)
+    rho  = Mth.degree(P)
     verbose && println("-- Degrees ", map(p->DP.maxdegree(p),P))
-    ish = M.is_homogeneous(P)
+    ish = Mth.is_homogeneous(P)
     verbose && println("-- Homogeneity ", ish)
     
     t0 = time()
     #println("-- Monomials ", length(L), " degree ", rho,"   ",time()-t0, "(s)"); t0 = time()
 
     X = DP.variables(P)
-    R, L = macaulay_matrix(P, X, rho, ish)
+    R, L = res_matrix(Mth, P) #, X, rho, ish)
     
     verbose && println("-- Macaulay matrix ", size(R,1),"x",size(R,2),"   rho ",rho,"   ", time()-t0, "(s)"); t0 = time()
 
@@ -166,8 +162,7 @@ function solve(M::Macaulay, P;
     
 end
 
-function solve(::Val{:macaulay}, P; verbose::Bool = false )
-    solve(Macaulay(),P; verbose=verbose)
-end
+
+
 
 

@@ -1,7 +1,7 @@
 #AA = AbstractAlgebra
 import AbstractAlgebra: gens, exponent_vectors
 
-export matrix_mult, solve_groebner,
+export mult_matrices, solve_groebner,
     as_polynomial, convert_coeff, reduce_by, as_monomial,
     prolong, border, normform
 
@@ -95,10 +95,10 @@ export Grobner
 """
 Structure which defines
 
-  - grobner_basis::Function
-  - reduce:: Function
-  -  quotient_basis:: Function
-  -  ordering
+  - `grobner_basis :: Function (P,X) -> ` grobner basis of `P` with variables `X`
+  - `reduce :: Function (p, G) -> ` normal form of the polynomial `p` modulo G 
+  - `quotient_basis :: Function P -> ` basis of the quotient by the ideal(`P`)
+
 """
 struct Grobner
     grobner_basis::Function
@@ -151,14 +151,16 @@ function normform(M, G::AbstractVector, B)
     N, Mnx
 end
 
+export mult_matrix
+
 """
 ```
-M = matrix_mult(M::Grobner, p, G::AbstractVector, Idx::Dict)
+M = mult_matrix(M::Grobner, p, G::AbstractVector, Idx::Dict)
 ```
 Compute the matrix of multication by `p` modulo `g` in the basis associated to the basis dictionary `Idx`. It is assumed that `g` is a Groebner basis and that the quotient is finite dimensional.
 
 """
-function matrix_mult(Mth::Grobner, p, G::AbstractVector, Idx::Dict)
+function mult_matrix(Mth::Grobner, p, G::AbstractVector, Idx::Dict)
     delta = length(Idx)
     M = fill(zero(first(coefficients(G[1]))),delta,delta)        
     for key in Idx
@@ -191,7 +193,9 @@ function mult_matrix(Mth::Grobner, p, G::AbstractVector, B)
 end
 
 
-function mult_matrix(Mth, X, N, B::AbstractVector, Idx::Dict)
+
+
+function mult_matrices(Mth::Grobner, X, N, B::AbstractVector, Idx::Dict)
     M = typeof(N)[]
     for x in X
         Bx = B*x
@@ -200,10 +204,52 @@ function mult_matrix(Mth, X, N, B::AbstractVector, Idx::Dict)
     end
     return M
 end
-
-
+"""
+```
+    B = quotient_basis(Mth::Grobner,P)
+```
+Computes the basis `B` of the quotient by the ideal (P), which are the monomials not in the inital of (P).
+"""
+function quotient_basis(Mth::Grobner,P)
+    X = DynamicPolynomials.variables(P)
+    G = Mth.grobner_basis(P,X)
+    B = sort(as_monomial.(Mth.quotient_basis(G))); 
+end
 
 """
+```
+    B = tnf(Mth::Grobner,P)
+```
+Computes the Truncated Normal Form on `B^+` where `B` is the basis of the quotient by the ideal (`P`), which are the monomials not in the inital of (`P`).
+"""
+
+function tnf(Mth::Grobner,P)
+
+    X = DynamicPolynomials.variables(P)
+    G = Mth.grobner_basis(P,X)
+    B = sort(as_monomial.(Mth.quotient_basis(G)))
+    Gf = [convert_coeff(g, Float64) for g in G]
+    N, II = normform(Mth, Gf, B)
+    l = 1; m0 =1
+    for (m,i) in II  l = max(l,i) end
+    L = fill(DynamicPolynomials.monomial(X[1]^0),l)
+    for (m,i) in II  L[i] = m  end
+
+    return N, L
+end
+
+function mult_matrices(Mth::Grobner,P)
+    X = DynamicPolynomials.variables(P)
+    G = Mth.grobner_basis(P,X)
+    B = sort(as_monomial.(Mth.quotient_basis(G)))
+    Gf = [convert_coeff(g, Float64) for g in G]
+    N, II = normform(Mth, Gf, B)
+    M = mult_matrices(Mth, X, N, B, II)
+
+end
+
+"""
+
 ```
 Xi, G, B = solve(Mth::Grobner, P::Vector; verbose = false)
 ```
@@ -270,7 +316,7 @@ function _solve_grobner_DP(Mth::Grobner, P; verbose=false)
     verbose && println(t, "s")
 
     verbose && print("\033[96mComputing mult matrices  \033[0m")
-    t = @elapsed  M = mult_matrix(Mth, X, N, B, II)
+    t = @elapsed  M = mult_matrices(Mth, X, N, B, II)
     verbose && println(t, "s")
     
     verbose && print("\033[96mJoint diagonalisation    \033[0m")
