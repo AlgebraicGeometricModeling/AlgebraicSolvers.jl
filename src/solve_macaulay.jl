@@ -1,4 +1,4 @@
-export res_matrix,  tnf, qr_basis, solve, is_not_homogeneous, quotient_basis
+export res_matrix,  tnf, qr_basis, solve, is_not_homogeneous, quo_basis
 
 import LinearAlgebra, DynamicPolynomials
 
@@ -98,7 +98,7 @@ end
 
 
 function tnf(::Val{:macaulay}, P) tnf(Macaulay(),P) end
-function quotient_basis(::Val{:macaulay}, P) quotient_basis(Macaulay(),P) end
+function quo_basis(::Val{:macaulay}, P) quo_basis(Macaulay(),P) end
 function solve(::Val{:macaulay}, P; verbose::Bool = false ) solve(Macaulay(),P; verbose=verbose) end
 
 

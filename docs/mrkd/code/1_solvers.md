@@ -9,6 +9,7 @@ AlgebraicSolvers.solve
 
 ## Solvers using resultant constructions
 
+They corresponds to the following type
 ```@docs 
 AlgebraicSolvers.Macaulay
 AlgebraicSolvers.Toric
@@ -18,15 +19,32 @@ AlgebraicSolvers.Toric
 
 ```@docs 
 AlgebraicSolvers.Grobner
-AlgebraicSolvers.mult_matrices
 ```
 
+## Quotient Algebra
 
-# Truncated  Normal Forms
+
+Truncated Normal Forms, which kernel generates the ideal, are available:
 
 ```@docs 
 AlgebraicSolvers.tnf
 ```
+
+The operators of multiplications (by the variables or any polynomial) can be computed with the following function:
+```@docs 
+AlgebraicSolvers.mult_matrices
+AlgebraicSolvers.mult_matrix
+```
+
+A basis of the quotient by the ideal (`P`) can be also computed:
+```@docs 
+AlgebraicSolvers.quo_basis
+
+```
+
+
+
+
 
 
 

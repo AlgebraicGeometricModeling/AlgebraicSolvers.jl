@@ -1,4 +1,4 @@
-export support, solve, tnf, quotient_basis, mult_matrices
+export support, solve, tnf, quo_basis, mult_matrices
 
 import DynamicPolynomials
 
@@ -55,7 +55,7 @@ function res_matrix(Mth::Toric, P)
     R = matrix(M,idx(L))
     R, L
 end
-s
+
 function res_matrix(::Val{:toric}, P)  res_matrix(Toric(),P) end
 
 function tnf(::Val{:toric}, P)  tnf(Toric(),P) end

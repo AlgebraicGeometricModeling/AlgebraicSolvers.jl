@@ -176,10 +176,10 @@ end
 
 export res_matrix
 """
-     M, L =  matrix_multipliers(P::AbstractVector, M::AbstractVector)
+     R, L =  res_matrix(P::AbstractVector, M::AbstractVector)
 
-Compute the matrix `M` of coefficients of the polynomials `P[i]*M[j]` and the liste `L` of monomials
-which appear in these polynomials. A row of `M` represents a polynomial as a vector of coefficients with respect to the monomials in `L`.
+Compute the matrix `R` of coefficients of the polynomials `P[i]*M[j]` and the liste `L` of monomials
+which appear in these polynomials. A *row* of `R` represents a polynomial as a vector of coefficients with respect to the monomials in `L`.
 
 """
 function res_matrix(P::AbstractVector, M::AbstractVector)

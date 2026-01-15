@@ -8,7 +8,7 @@ Mc = Macaulay()
 
 R, L = res_matrix(Mc,P)
 N, L = tnf(Mc,P)
-B = quotient_basis(:macaulay,P)
+B = quo_basis(:macaulay,P)
 M = mult_matrices(Mc,P)
 
 Xi = solve(:macaulay, P; verbose=false)

@@ -1,19 +1,11 @@
 # Resultants matrices
 
-Different constructions of resultant matrices are available, including projective or Macaulay resultant matrices, toric resultant matrices.
+Different constructions of resultant matrices are available, including projective or Macaulay (`Mth=Macaulay()`) resultant matrices, toric (`Mth=Toric()`) resultant matrices.
 
 ```@docs 
 AlgebraicSolvers.res_matrix
 ```
 
-
-The following function allows to construct the coefficient matrix of monomial multipliers:
-
-
-
-```@docs 
-AlgebraicSolvers.matrix_multipliers
-```
 
 
 ## Toric resultants

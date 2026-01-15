@@ -5,6 +5,27 @@ export mult_matrices, solve_groebner,
     as_polynomial, convert_coeff, reduce_by, as_monomial,
     prolong, border, normform
 
+
+export Grobner
+"""
+Structure which defines
+
+  - `grobner_basis :: Function (P,X) -> ` grobner basis of `P` with variables `X`
+  - `reduce :: Function (p, G) -> ` normal form of the polynomial `p` modulo G 
+  - `quotient_basis :: Function P -> ` basis of the quotient by the ideal(`P`)
+
+"""
+struct Grobner
+    grobner_basis::Function
+    reduce:: Function
+    quotient_basis:: Function
+end
+
+function reduce_by(M,p,G)
+    Groebner.normalform(G,p)
+end
+
+
 function as_monomial(p)
     DynamicPolynomials.monomials(p)[end]
 end
@@ -89,25 +110,6 @@ function _reduced_by(p,G)
         end
     end
     r
-end
-
-export Grobner
-"""
-Structure which defines
-
-  - `grobner_basis :: Function (P,X) -> ` grobner basis of `P` with variables `X`
-  - `reduce :: Function (p, G) -> ` normal form of the polynomial `p` modulo G 
-  - `quotient_basis :: Function P -> ` basis of the quotient by the ideal(`P`)
-
-"""
-struct Grobner
-    grobner_basis::Function
-    reduce:: Function
-    quotient_basis:: Function
-end
-
-function reduce_by(M,p,G)
-    Groebner.normalform(G,p)
 end
 
 function normform(M, G::AbstractVector, B)
@@ -206,11 +208,11 @@ function mult_matrices(Mth::Grobner, X, N, B::AbstractVector, Idx::Dict)
 end
 """
 ```
-    B = quotient_basis(Mth::Grobner,P)
+    B = quo_basis(Mth::Grobner,P)
 ```
-Computes the basis `B` of the quotient by the ideal (P), which are the monomials not in the inital of (P).
+Computes the basis `B` of the quotient by the ideal (P), formed by the monomials which are not in the inital of (P).
 """
-function quotient_basis(Mth::Grobner,P)
+function quo_basis(Mth::Grobner,P)
     X = DynamicPolynomials.variables(P)
     G = Mth.grobner_basis(P,X)
     B = sort(as_monomial.(Mth.quotient_basis(G))); 
@@ -220,9 +222,8 @@ end
 ```
     B = tnf(Mth::Grobner,P)
 ```
-Computes the Truncated Normal Form on `B^+` where `B` is the basis of the quotient by the ideal (`P`), which are the monomials not in the inital of (`P`).
+Computes the Truncated Normal Form on `B^+` where `B` is the basis of the quotient by the ideal (`P`), formed by the monomials which are not in the inital of (`P`).
 """
-
 function tnf(Mth::Grobner,P)
 
     X = DynamicPolynomials.variables(P)
