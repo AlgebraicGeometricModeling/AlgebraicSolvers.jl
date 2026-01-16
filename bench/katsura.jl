@@ -5,13 +5,15 @@ GB = Grobner((P,X) -> Groebner.groebner(P, ordering = Groebner.DegRevLex(X)),
               G -> Groebner.quotient_basis(G)
             )
 
-for N in 4:6
-    println("\nKatsura ",N)
+for N in 4:12
+    println("\n=== Katsura ",N)
     global P = Groebner.Examples.katsuran(N)
+
+if N<=10
     t0 = @elapsed Xi, G, B  = AlgebraicSolvers.solve(GB,P,verbose=true)
     println("Nb roots: ",size(Xi,2))
     println("Groebner: ",t0, "(s)\n")
-
+end
     X = (@polyvar x[1:N+1])[1]
     global P1 = [as_polynomial(p,X,Float64) for p in P]
     
@@ -19,7 +21,7 @@ for N in 4:6
     t2 = @elapsed global Xi2 = HomotopyContinuation.solve(P2)
     println("Homotopy: ",t2, "(s)\n")
 
-
+if N<=6
     t1 = @elapsed Xi1  = AlgebraicSolvers.solve(Macaulay(),P1,verbose=true)
     println("Nb roots: ",size(Xi1,2))
     println("Macaulay: ",t1, "(s)\n")
@@ -29,4 +31,6 @@ for N in 4:6
     println("Nb roots: ",size(Xi2,2))
     println("Total: ",t2, "(s)\n")
     =#
+end
+
 end
