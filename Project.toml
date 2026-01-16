@@ -13,5 +13,5 @@ MultivariateSeries = "08acae6c-c1bf-11e9-0c27-6b1945f8789b"
 [compat]
 julia = "1.11 - 1.15"
 DynamicPolynomials = "0.5 - 0.10 "
-AbstractAlgebra = "0.47 - 1"
+AbstractAlgebra = "0.47 - 0.50"
 MultivariateSeries = "0.1.4 - 0.2"

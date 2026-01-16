@@ -129,9 +129,9 @@ function solve(Mth::Macaulay, P;
                verbose::Bool = false )
 
     rho  = Mth.degree(P)
-    verbose && println("-- Degrees ", map(p->DP.maxdegree(p),P))
+    verbose && println("\033[96m-- Degrees ", map(p->DP.maxdegree(p),P),"\033[0m")
     ish = Mth.is_homogeneous(P)
-    verbose && println("-- Homogeneity ", ish)
+    verbose && println("\033[96m-- Homogeneity ", ish,"\033[0m")
     
     t0 = time()
     #println("-- Monomials ", length(L), " degree ", rho,"   ",time()-t0, "(s)"); t0 = time()
@@ -139,19 +139,19 @@ function solve(Mth::Macaulay, P;
     X = DP.variables(P)
     R, L = res_matrix(Mth, P) #, X, rho, ish)
     
-    verbose && println("-- Macaulay matrix ", size(R,1),"x",size(R,2),"   rho ",rho,"   ", time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Macaulay matrix ", size(R,1),"x",size(R,2),"   rho ",rho,"   \033[0m", time()-t0, "(s)"); t0 = time()
 
     N = LinearAlgebra.nullspace(R)
-    verbose && println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Null space ",size(N,1),"x",size(N,2), "   \033[0m",time()-t0, "(s)"); t0 = time()
 
     B, Nr = qr_basis(N, L, ish)
-    verbose && println("-- Qr basis ",  length(B), "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Qr basis ",  length(B), "   \033[0m",time()-t0, "(s)"); t0 = time()
 
     M = mult_matrix(B, X, Nr, idx(L), ish)
-    verbose && println("-- Mult matrices ",time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Mult matrices \033[0m",time()-t0, "(s)"); t0 = time()
 
     Xi = eigdiag(M)
-    verbose && println("-- Eigen diag",  "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Eigen diag",  "  \033[0m ",time()-t0, "(s)"); t0 = time()
     if (!ish)
         for i in 1:size(Xi,2) Xi[:,i]/=Xi[1,i] end
         Xi = Xi[2:size(Xi,1),:]

@@ -93,24 +93,24 @@ function solve(Mth, P; verbose::Bool=false)
     t0 = time()
     #A = [support(p) for p in P]
     R, L = res_matrix(Mth,P)
-    verbose && println("-- Resultant matrix ", size(R,1),"x",size(R,2),  "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Resultant matrix ", size(R,1),"x",size(R,2),  "   \033[0m",time()-t0, "(s)"); t0 = time()
     #println("-- L ", L)
     N = LinearAlgebra.nullspace(R)
-    verbose && println("-- Null space ",size(N,1),"x",size(N,2), "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Null space ",size(N,1),"x",size(N,2), "   \033[0m",time()-t0, "(s)"); t0 = time()
 
     X = DynamicPolynomials.variables(P);
     B = tnf_basis(N, L, X)
     if B == nothing
         return nothing
     end
-    verbose && println("-- Basis ", B, "  ", time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Basis ", B, "  \033[0m", time()-t0, "(s)"); t0 = time()
 
     
     M = mult_matrix(B, X, N, idx(L), false)
-    verbose && println("-- Mult matrices ",time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Mult matrices \033[0m",time()-t0, "(s)"); t0 = time()
 
     Xi = eigdiag(M)
-    verbose && println("-- Eigen diag",  "   ",time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Eigen diag",  "   \033[0m",time()-t0, "(s)"); t0 = time()
 
     for i in 1:size(Xi,2) Xi[:,i]/=Xi[1,i] end
     Xi = Xi[2:size(Xi,1),:]

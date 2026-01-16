@@ -302,27 +302,27 @@ function _solve_grobner_DP(Mth::Grobner, P; verbose=false)
     
     X = DynamicPolynomials.variables(P)
 
-    verbose && print("\033[96mComputing Grobner basis \033[0m")
+    verbose && print("\033[96m-- Computing Grobner basis \033[0m")
     t = @elapsed G = Mth.grobner_basis(P,X)
     verbose && println(t, "s")
 
-    verbose && print("\033[96mComputing quotient basis \033[0m")
+    verbose && print("\033[96m-- Computing quotient basis \033[0m")
     t = @elapsed B = sort(as_monomial.(Mth.quotient_basis(G))); 
     verbose && println(t, "s")
 
     Gf = [convert_coeff(g, Float64) for g in G]
 
-    verbose && print("\033[96mComputing normal form    \033[0m")
+    verbose && print("\033[96m-- Computing normal form    \033[0m")
     t = @elapsed N, II = normform(Mth, Gf, B)
     verbose && println(t, "s")
 
-    verbose && print("\033[96mComputing mult matrices  \033[0m")
+    verbose && print("\033[96m-- Computing mult matrices  \033[0m")
     t = @elapsed  M = mult_matrices(Mth, X, N, B, II)
     verbose && println(t, "s")
     
-    verbose && print("\033[96mJoint diagonalisation    \033[0m")
+    verbose && print("\033[96m-- Joint diagonalisation    \033[0m")
     t = @elapsed Xi, E, Info = MultivariateSeries.diagonalization(M)
-    verbose && println(t, "s\n")
+    verbose && println(t, "s")
     
     return Xi, G, B
 end
