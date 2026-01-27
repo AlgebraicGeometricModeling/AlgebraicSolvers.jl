@@ -18,7 +18,7 @@ P = [
     sum(m*rand(Int64) for m in M)
 ]
 
-Xi,G,B = solve(GB,P)
+Xi,G,B = AlgebraicSolvers.solve(GB,P)
 #println("-- sol ", Xi)
 
 #Er = rel_error(P,Xi,X)

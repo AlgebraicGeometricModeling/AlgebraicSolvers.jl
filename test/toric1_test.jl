@@ -16,10 +16,12 @@ p2= rand(length(A0))'*A0
 
 P = [p1,p2]
 
-R, L  = res_matrix(Tr,P)
-N, IB = nullspace(R)
+Mth = Toric()
+R, L  = res_matrix(Mth,P)
+N, _ = LinearAlgebra.nullspace(R)
+B =  quot_basis(Mth,P)
 
-Xi = solve(Toric(),P)
+Xi = AlgebraicSolvers.solve(Toric(),P; verbose=true)
 
 #println("-- sol ", Xi)
 Er = rel_error(P,Xi,X)

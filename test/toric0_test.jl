@@ -10,7 +10,7 @@ N, L = tnf(Tr,P)
 B = quot_basis(Tr,P)
 M = mult_matrices(Tr,P,X)
 
-Xi = solve(Tr, P; verbose=true)
+Xi = AlgebraicSolvers.solve(Tr, P; verbose=true)
 Er = rel_error(P,Xi,X)
 println("-- Rel error: ", norm(Er,Inf));
 Xi

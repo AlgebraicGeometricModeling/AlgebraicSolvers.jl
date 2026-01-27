@@ -16,7 +16,7 @@ p3= rand(length(A))'*A
 
 P = [p1,p2,p3]
 
-Xi = solve(Toric(),P; verbose=true)
+Xi = AlgebraicSolvers.solve(Toric(),P; verbose=true)
 
 #println("-- sol ", Xi)
 Er = rel_error(P,Xi,X)

@@ -136,7 +136,11 @@ function solve(Mth::Macaulay, P;
 
     t = @elapsed R, L = res_matrix(Mth, P)
     verbose && println("\033[96m-- Macaulay matrix ", size(R,1),"x",size(R,2),"  \033[0m", t, "(s)"); t0 = time()
-
+    if ish 
+        L = reverse(L) # graded reverse lex order if default order is Graded{LexOrder}
+        R = R[:,end:-1:1] 
+    end
+    
     N, _ = LinearAlgebra.nullspace(R)
     verbose && println("\033[96m-- Null space ",size(N,1),"x",size(N,2), "   \033[0m",time()-t0, "(s)"); t0 = time()
 
@@ -147,7 +151,7 @@ function solve(Mth::Macaulay, P;
     verbose && println("\033[96m-- Basis ", length(IB), "   \033[0m",time()-t0, "(s)"); t0 = time(); 
     
     if ish
-        M = _mult_matrices_h(F.R, L, IB, X, X[end])
+        M = _mult_matrices_h(F.R, L, IB, X, X[1])
     else
         M = _mult_matrices(F.R, L, IB, X)
     end

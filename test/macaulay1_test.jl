@@ -13,7 +13,7 @@ N, L = tnf(Mc,P)
 B = quot_basis(Mc,P)
 M = mult_matrices(Mc,P)
 
-Xi = solve(:macaulay, P; verbose=true)
+Xi = AlgebraicSolvers.solve(:macaulay, P; verbose=true)
 Er = rel_error(P,Xi,X)
 println("-- Rel error: ", norm(Er,Inf));
 

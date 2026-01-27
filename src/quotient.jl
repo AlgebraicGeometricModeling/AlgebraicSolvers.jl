@@ -83,6 +83,8 @@ function _mult_matrices(N, L, IB, X)
 end
 
 function _mult_matrices_h(N, L, IB, X, v0)
+
+    #println("---> ",v0)
     M0i = inv(N[:, IB])
     
     Idx = idx(L)
@@ -91,6 +93,7 @@ function _mult_matrices_h(N, L, IB, X, v0)
     x0 = monomial(v0)
     for x in X
         J = [get(Idx,div(L[i]*x,x0),0) for i in IB]
+            #println("---> ",[div(L[i]*x,x0) for i in IB])
         if  findfirst(x-> x==0, J) == nothing
             push!(M, M0i*N[:,J])
         else
@@ -134,21 +137,18 @@ function solve(Mth, P; verbose::Bool=false)
     N, IB = LinearAlgebra.nullspace(R)
     verbose && println("\033[96m-- Null space ", size(N,1),"x",size(N,2), "   \033[0m",time()-t0, "(s)"); t0 = time()
 
-    #X = DynamicPolynomials.variables(P);
-    #B = tnf_basis(N, L, X)
-    #if B == nothing return nothing    end
-
-    verbose && println("\033[96m-- Basis ", L[IB], "  \033[0m")
-
     Nt = N'
-    M = _mult_matrices(Nt, L, IB, X)
+    F = qr!(Nt)
+    IB = column_basis(F.R)
+
+    verbose && println("\033[96m-- Basis ", L[IB], "  \033[0m",time()-t0, "(s)"); t0 = time()
+
+    M = _mult_matrices(F.R, L, IB, X)
     verbose && println("\033[96m-- Mult matrices \033[0m",time()-t0, "(s)"); t0 = time()
 
     Xi = eigdiag(M)
     verbose && println("\033[96m-- Eigen diag",  "   \033[0m",time()-t0, "(s)"); t0 = time()
 
-    #    for i in 1:size(Xi,2) Xi[:,i]/=Xi[1,i] end
-    #    Xi = Xi[2:size(Xi,1),:]
     Xi
 end
 
