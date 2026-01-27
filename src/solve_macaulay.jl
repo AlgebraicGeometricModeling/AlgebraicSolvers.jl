@@ -1,4 +1,4 @@
-export res_matrix,  tnf, qr_basis, solve, is_not_homogeneous, quo_basis
+export res_matrix,  tnf, quot_basis, solve, qr_basis, is_not_homogeneous
 
 import LinearAlgebra, DynamicPolynomials
 
@@ -10,9 +10,6 @@ export Macaulay
 Structure for the construction of Macaulay resultant solvers. It stores
   - `degree :: Function P->` degree of regularity +1 (default: `P ->  sum(DynamicPolynomials.maxdegree(P[i])-1 for i in 1:length(P)) + 1`) 
   -  `is_homogeneous :: Function P->` boolean testing if the system is homogeneous or not (default: `P -> !any(AlgebraicSolvers.is_not_homogeneous, P)`)
-
-
-
 
 """
 struct Macaulay
@@ -31,6 +28,7 @@ function is_not_homogeneous(p)
     L = [DP.maxdegree(t) for t in DP.monomials(p)]
     maximum(L) != minimum(L)
 end
+
 
 """
     R, L = res_matrix(Mth::Macaulay, P, X, rho, ish = false)
@@ -59,7 +57,7 @@ function res_matrix(Mth::Macaulay, P, X=DP.variables(P), rho =  Mth.degree(P),  
             push!(M,P[i]*m)
         end
     end
-    matrix(M,idx(L)), L
+    sparse_matrix(M,idx(L)), L
 end
 
 function qr_basis(N, L, ish = false)
@@ -96,12 +94,13 @@ function qr_basis(N, L, ish = false)
     B, N*F.Q
 end
 
-
+function res_matrix(::Val{:macaulay}, P) res_matrix(Macaulay(),P) end
 function tnf(::Val{:macaulay}, P) tnf(Macaulay(),P) end
-function quo_basis(::Val{:macaulay}, P) quo_basis(Macaulay(),P) end
+function quot_basis(::Val{:macaulay}, P) quot_basis(Macaulay(),P) end
 function solve(::Val{:macaulay}, P; verbose::Bool = false ) solve(Macaulay(),P; verbose=verbose) end
 
 
+export solved
 """
     Xi = solve(Macaulay(), P)
 
@@ -128,34 +127,36 @@ Xi = solve(Macaulay(), P)
 function solve(Mth::Macaulay, P;
                verbose::Bool = false )
 
-    rho  = Mth.degree(P)
-    verbose && println("\033[96m-- Degrees ", map(p->DP.maxdegree(p),P),"\033[0m")
+    rho = Mth.degree(P)
     ish = Mth.is_homogeneous(P)
-    verbose && println("\033[96m-- Homogeneity ", ish,"\033[0m")
-    
-    t0 = time()
-    #println("-- Monomials ", length(L), " degree ", rho,"   ",time()-t0, "(s)"); t0 = time()
+
+    verbose && println("\033[96m-- Degrees = ", map(p->DP.maxdegree(p),P),"   rho = ", rho, "   Homogeneity = ", ish, "\033[0m")
 
     X = DP.variables(P)
-    R, L = res_matrix(Mth, P) #, X, rho, ish)
-    
-    verbose && println("\033[96m-- Macaulay matrix ", size(R,1),"x",size(R,2),"   rho ",rho,"   \033[0m", time()-t0, "(s)"); t0 = time()
 
-    N = LinearAlgebra.nullspace(R)
+    t = @elapsed R, L = res_matrix(Mth, P)
+    verbose && println("\033[96m-- Macaulay matrix ", size(R,1),"x",size(R,2),"  \033[0m", t, "(s)"); t0 = time()
+
+    N, _ = LinearAlgebra.nullspace(R)
     verbose && println("\033[96m-- Null space ",size(N,1),"x",size(N,2), "   \033[0m",time()-t0, "(s)"); t0 = time()
 
-    B, Nr = qr_basis(N, L, ish)
-    verbose && println("\033[96m-- Qr basis ",  length(B), "   \033[0m",time()-t0, "(s)"); t0 = time()
+    Nt = N';
+    F = qr!(Nt)
+    IB = column_basis(F.R)
 
-    M = mult_matrix(B, X, Nr, idx(L), ish)
-    verbose && println("\033[96m-- Mult matrices \033[0m",time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Basis ", length(IB), "   \033[0m",time()-t0, "(s)"); t0 = time(); 
+    
+    if ish
+        M = _mult_matrices_h(F.R, L, IB, X, X[end])
+    else
+        M = _mult_matrices(F.R, L, IB, X)
+    end
+    
+    verbose && println("\033[96m-- Mult matrices  \033[0m",time()-t0, "(s)"); t0 = time()
 
     Xi = eigdiag(M)
     verbose && println("\033[96m-- Eigen diag",  "  \033[0m ",time()-t0, "(s)"); t0 = time()
-    if (!ish)
-        for i in 1:size(Xi,2) Xi[:,i]/=Xi[1,i] end
-        Xi = Xi[2:size(Xi,1),:]
-    else
+    if (ish)
         for i in 1:size(Xi,2) Xi[:,i]/=LinearAlgebra.norm(Xi[:,i]) end
     end
     Xi

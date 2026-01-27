@@ -4,8 +4,12 @@ GB = Grobner((P,X) -> Groebner.groebner(P, ordering = Groebner.DegRevLex(X)),
               G -> Groebner.quotient_basis(G)
              )
 
-N=5
+N=4
 println("\nKatsura ",N)
 P = Groebner.Examples.katsuran(N)
-Xi, G, B  = AlgebraicSolvers.solve(GB,P,verbose=true)
-Xi
+Xi, G, B  = AlgebraicSolvers.solve(GB,P,verbose=true);
+
+
+P1 = convert_DP(P)
+Er = rel_error(P1, Xi, X)
+println("-- Rel error: ", norm(Er,Inf));

@@ -16,6 +16,9 @@ p2= rand(length(A0))'*A0
 
 P = [p1,p2]
 
+R, L  = res_matrix(Tr,P)
+N, IB = nullspace(R)
+
 Xi = solve(Toric(),P)
 
 #println("-- sol ", Xi)

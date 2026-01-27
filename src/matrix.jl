@@ -1,4 +1,4 @@
-export matrix, smatrix, tnf_basis, mult_matrix, eigdiag, kernel, rel_error, idx
+export matrix, sparse_matrix, tnf_basis, mult_matrix, eigdiag, kernel, rel_error, idx
 
 import DynamicPolynomials: coefficients, monomials
 
@@ -21,27 +21,92 @@ function kernel(A::Matrix)
     V[:,r+1:end]
 end
 
-function nullspace(A::AbstractSparseMatrix)
+export nullspace
+function LinearAlgebra.nullspace(R::AbstractSparseMatrix)
 
-    F = lufact(A')
-    U = F[:U]
-    r = 1
-    while r<=min(size(A,1),size(A,2)) && abs(U[r,r])> 1.e-4
-         r+=1
-    end
-    r-= 1
-    L = F[:L]'
+    s = size(R,2)
 
-    L0= L[1:r,1:r]
-    K = L[1:r,r+1:end]
-    N = cat(1, - L0\K, eye(size(A,2)-r))
+    Rr = R[:,end:-1:1]
 
-    P = fill(0, size(A,2))
-    for i in 1:size(A,2) P[F[:p][i]]= i end
-    return (F[:Rs] .* N[P,:])
 
+    F = qr(Rr)
+    l = rank(F.R)
+    r = s-l
+    
+
+    IB = [i for i in s:-1:1][F.pcol]
+    IB = IB[l+1:end]
+
+    U = F.R
+    G = Array(U[1:l,l+1:end])
+    N = U[1:l,1:l]\G
+
+    N = vcat(-N, Matrix(I,r,r))
+    N = N[reverse(invperm(F.pcol)),:]
+
+#=
+    F = qr(R)
+    
+    l = rank(F.R)
+
+    r = s-l
+
+    R0 = (R[end:-1:1,F.pcol])[:,1:l]
+    
+    F0 = lu(R0)
+
+    #IB = [i for i in s:-1:1][F0.q]
+    IB = [i for i in s:-1:1][F0.p]
+    IB = IB[l+1:end]
+
+    #U = F0.U
+    U = spzeros(size(R0,2), size(R0,1))
+    transpose!(U,F0.L)
+
+    G  = Array(U[1:l,l+1:end])
+    N = U[1:l,1:l]\G
+    
+    N = vcat(-N, Matrix(I,r,r))
+
+    N = (F0.Rs[F0.p]).*N
+   
+    #    N = N[:,reverse(invperm(F0.p))]
+    N = N[reverse(invperm(F0.p)),:]
+=#
+    return N, IB
 end
 
+#=
+function LinearAlgebra.nullspace(R::AbstractSparseMatrix, L::Vector)
+    Rt= R'
+    s = size(R,2)
+    F = qr(Rt)
+    l = rank(F.R)
+    r = s-l
+
+    R0 = (Rt[end:-1:1,F.pcol])[:,1:l]
+    
+    F0 = lu(R0)
+
+    U = spzeros(size(R0,2), size(R0,1))
+    transpose!(U,F0.L)
+    
+    G  = Array(U[1:l,l+1:end])
+    
+    N = U[1:l,1:l]\G
+    
+    N = vcat(-N, Matrix(I,r,r))
+
+    N = (F0.Rs[F0.p]).*N
+   
+    #    N = N[:,reverse(invperm(F0.p))]
+    N = N[reverse(invperm(F0.p)),:]
+    
+#    B = L[F.pcol[l+1:end]]
+
+    return N, B
+end
+=#
 function matrix(P::Vector, M::Dict)
     
     A = fill(zero(coefficients(P[1])[1]), length(P), length(M))
@@ -60,24 +125,58 @@ function matrix(P::Vector, M::Dict)
     A
 end
 
-function smatrix(P::Vector, M::Dict)
+export sparse_matrix
+function sparse_matrix(P::Vector, M::Dict)
     I = Int64[]
     J = Int64[]
-    V = coeftype(P[1])[]
+    V = Float64[]
     
-    for (p,j) in zip(P,1:length(P))
-        for t in p
-            i = get(M, t.x, 0)
+    for i in 1:length(P)
+        for (m,c) in zip(monomials(P[i]),coefficients(P[i]))
+            j = get(M, m, 0)
             if i != 0
-                push!(I,i); push!(J,j), push!(V,t.α)
+                push!(I,i);
+                push!(J,j), push!(V,c)
             end
         end
     end
-    sparse(J,I,V)
+    sparse(I,J,V)
 end
 
 function issmall(x)
     return abs(x) < 10^(-6)
+end
+
+function _rowechelon_basis(N, eps = 1.e-10)
+    r = size(N,1)
+    Idx = fill(0,r)
+    for i in 1:r
+        Idx[i] = findfirst(x->abs(x)>eps, N[i,:])
+    end
+    return Idx
+end
+
+export column_basis
+function column_basis(N, eps = 1.e-10)
+    r = size(N,1)
+    Idx = fill(0,r)
+    N0 = N[:,1:1]
+    Idx[1]=1
+    for i in 2:r
+        j = Idx[i-1]
+        while j <= size(N,2)
+            s = N0\N[:,j]
+            err =  norm(N0*s-N[:,j])
+            #println("-- ", j, err)
+            if err > eps
+                Idx[i] = j
+                N0 =hcat(N0,N[:,j])
+                break
+            end
+            j += 1
+        end
+    end
+    return Idx
 end
 
 function tnf_basis(N, L::AbstractVector, X)
@@ -143,15 +242,15 @@ function mult_matrix(B, X, N, Nidx, ish = false)
 end
 
 function eigdiag(M)
-    M0 = sum(M[i]*rand() for i in 1:length(M))
-    #t0=time()
-    I0 = inv(M0)
-    #println("... inv   ", time()-t0, "(s)"); t0=time()
-    Mg = I0*M[1]
 
-    E  = LinearAlgebra.eigvecs(Mg)
-    #println("... eig   ", time()-t0, "(s)"); t0=time()
-    Z  = E\I0
+    M0 = sum(M[i]*rand() for i in 1:length(M))
+
+    #I0 = inv(M0)
+    #Mg = I0*M[1]
+
+    t = @elapsed E  = LinearAlgebra.eigvecs(M0)
+    #println("... eig   ", t, "(s)"); t0=time()
+    Z  = inv(E) #E\I0
 
     #t0 = time()
     #F = schurfact(Mg)
@@ -159,10 +258,9 @@ function eigdiag(M)
     # E = F[:vectors]
     # Z = E'
 
-    X = fill(Complex{Float64}(0.0),length(M),size(M0,1))
+    X = fill(eltype(E)(0),length(M),size(M0,1))
     for j in 1:length(M)
         Yj = Z*M[j]*E
-        # D = Y\Yj
         for i in 1:size(M0,1)
             X[j,i]= Yj[i,i] #(Y[:,i]\Yj[:,i])[1] #D[i,i]
         end
@@ -194,7 +292,7 @@ function res_matrix(P::AbstractVector, M::AbstractVector)
         end
     end
     L = sort(collect(L))
-    matrix(RM, idx(L)), L
+    sparse_matrix(RM, idx(L)), L
 end
 
 """

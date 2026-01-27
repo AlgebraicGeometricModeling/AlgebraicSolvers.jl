@@ -1,8 +1,7 @@
 #AA = AbstractAlgebra
 import AbstractAlgebra: gens, exponent_vectors
 
-export mult_matrices, solve_groebner,
-    as_polynomial, convert_coeff, reduce_by, as_monomial,
+export mult_matrices, solve_groebner, reduce_by,   
     prolong, border, normform
 
 
@@ -26,52 +25,6 @@ function reduce_by(M,p,G)
 end
 
 
-function as_monomial(p)
-    DynamicPolynomials.monomials(p)[end]
-end
-
-
-function as_monomial(p, X)
-    e = first(collect(exponent_vectors(p)))
-    return prod(X[k]^e[k] for k in 1:length(e))
-end
-
-function as_polynomial(p, X, C::Type=Rational{BigInt})
-
-    Exp   = collect(AbstractAlgebra.exponent_vectors(p))
-    Coeff = [C(c) for c in AbstractAlgebra.coefficients(p)]
-    
-    Mon = [prod(X[k]^e[k] for k in 1:length(e)) for e in Exp]
-
-    pol = sum(Coeff[i]*Mon[i] for i in 1:length(Coeff))
-
-    return pol
-end
-
-function as_polynomial(p::DynamicPolynomials.Polynomial, R)
-
-    Exp   = DynamicPolynomials.exponents.(DynamicPolynomials.monomials(p))
-    Coeff = [c for c in DynamicPolynomials.coefficients(p)]
-
-    X = gens(R)
-    
-    Mon = [prod(X[k]^e[k] for k in 1:length(e)) for e in Exp]
-
-    pol = sum(Coeff[i]*Mon[i] for i in 1:length(Coeff))
-
-end
-
-function convert_coeff(p, C::Type=Float64)
-
-    Mon = (monomials(p))
-    Coeff = [C(c) for c in coefficients(p)]
-    
-    pol = sum(Coeff[i]*Mon[i] for i in 1:length(Coeff))
-
-    return pol
-end
-
-
 function prolong(B,X)
     Bp = union(Set(B), [B*x for x in X]...)
     Bp = sort([m for m in Bp])
@@ -90,7 +43,6 @@ end
 function last_divisible_by(m,L)
     findlast(t->DynamicPolynomials.divides(t,m),L)
 end
-
 
 
 function _reduced_by(p,G)
@@ -112,7 +64,7 @@ function _reduced_by(p,G)
     r
 end
 
-function normform(M, G::AbstractVector, B)
+function normform(Mth, G::AbstractVector, B)
     r = length(B)
     Mnx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:r]...)
 
@@ -206,13 +158,16 @@ function mult_matrices(Mth::Grobner, X, N, B::AbstractVector, Idx::Dict)
     end
     return M
 end
+
+
+export quot_basis
 """
 ```
-    B = quo_basis(Mth::Grobner,P)
+    B = quot_basis(Mth::Grobner,P)
 ```
 Computes the basis `B` of the quotient by the ideal (P), formed by the monomials which are not in the inital of (P).
 """
-function quo_basis(Mth::Grobner,P)
+function quot_basis(Mth::Grobner,P)
     X = DynamicPolynomials.variables(P)
     G = Mth.grobner_basis(P,X)
     B = sort(as_monomial.(Mth.quotient_basis(G))); 
@@ -232,9 +187,13 @@ function tnf(Mth::Grobner,P)
     Gf = [convert_coeff(g, Float64) for g in G]
     N, II = normform(Mth, Gf, B)
     l = 1; m0 =1
-    for (m,i) in II  l = max(l,i) end
+    for (m,i) in II
+        l = max(l,i)
+    end
     L = fill(DynamicPolynomials.monomial(X[1]^0),l)
-    for (m,i) in II  L[i] = m  end
+    for (m,i) in II
+        L[i] = m
+    end
 
     return N, L
 end

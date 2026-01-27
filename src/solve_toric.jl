@@ -52,12 +52,10 @@ function res_matrix(Mth::Toric, P)
     end
     mult *= A[end]
     L = (DynamicPolynomials.monomials(mult))
-    R = matrix(M,idx(L))
+    R = sparse_matrix(M,idx(L))
     R, L
 end
 
 function res_matrix(::Val{:toric}, P)  res_matrix(Toric(),P) end
-
 function tnf(::Val{:toric}, P)  tnf(Toric(),P) end
-
 function solve(::Val{:toric}, P; verbose::Bool = false )  solve(Toric(),P; verbose=verbose) end

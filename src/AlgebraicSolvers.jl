@@ -4,6 +4,7 @@ module AlgebraicSolvers
   import LinearAlgebra, MultivariateSeries,  AbstractAlgebra
 
   include("matrix.jl")
+  include("convert.jl")
   include("quotient.jl")
   include("newton.jl")
 
