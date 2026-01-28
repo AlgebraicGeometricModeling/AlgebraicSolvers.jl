@@ -157,7 +157,7 @@ function _rowechelon_basis(N, eps = 1.e-10)
 end
 
 export column_basis
-function column_basis(N, eps = 1.e-10)
+function column_basis(N, eps = 1.e-3)
     r = size(N,1)
     Idx = fill(0,r)
     N0 = N[:,1:1]
@@ -167,7 +167,7 @@ function column_basis(N, eps = 1.e-10)
         while j <= size(N,2)
             s = N0\N[:,j]
             err =  norm(N0*s-N[:,j])
-            #println("-- ", j, err)
+            #println("-- ", j," ", err)
             if err > eps
                 Idx[i] = j
                 N0 =hcat(N0,N[:,j])

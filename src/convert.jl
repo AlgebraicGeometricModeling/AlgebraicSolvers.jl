@@ -45,13 +45,13 @@ function convert_coeff(p, C::Type=Float64)
     return pol
 end
 
-
-function convert_DP(P::Vector)
+function convert_DP(P::Vector, C::Type=Float64)
     R = parent(P[1])
     n = length(AbstractAlgebra.gens(R))
+    X = (DynamicPolynomials.@polyvar x[1:n] monomial_order = Graded{Reverse{LexOrder}})[1]
 
-    X = (DynamicPolynomials.@polyvar x[1:n] monomial_order = Graded{Reverse{InverseLexOrder}})[1]
-    C = typeof(first(AbstractAlgebra.coefficients(P[1])))
+    #C = typeof(first(AbstractAlgebra.coefficients(P[1])))
 
-    P1 = [as_polynomial(p, X, C) for p in P]
+    return [as_polynomial(p, X, C) for p in P]
 end
+

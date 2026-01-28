@@ -9,11 +9,12 @@ for N in 4:12
     println("\n=== Katsura ",N)
     global P = Groebner.Examples.katsuran(N)
 
-if N<=10
-    t0 = @elapsed Xi, G, B  = AlgebraicSolvers.solve(GB,P,verbose=true)
-    println("Nb roots: ",size(Xi,2))
-    println("Groebner: ",t0, "(s)\n")
-end
+    if N<=10
+        t0 = @elapsed Xi, G, B  = AlgebraicSolvers.solve(GB,P,verbose=true)
+        println("Nb roots: ",size(Xi,2))
+        println("Groebner: ",t0, "(s)\n")
+    end
+    
     X = (@polyvar x[1:N+1])[1]
     global P1 = [as_polynomial(p,X,Float64) for p in P]
     
@@ -21,16 +22,18 @@ end
     t2 = @elapsed global Xi2 = HomotopyContinuation.solve(P2)
     println("Homotopy: ",t2, "(s)\n")
 
-if N<=6
-    t1 = @elapsed Xi1  = AlgebraicSolvers.solve(Macaulay(),P1,verbose=true)
-    println("Nb roots: ",size(Xi1,2))
-    println("Macaulay: ",t1, "(s)\n")
+    if N<=7
+        t1 = @elapsed Xi1  = AlgebraicSolvers.solve(Macaulay(),P1,verbose=true)
+        println("Nb roots: ",size(Xi1,2))
+        println("Macaulay: ",t1, "(s)\n")
+        
+    end
 
-    #=
-    t3 = @elapsed Xi3  = AlgebraicSolvers.solve(Toric(),P1,verbose=true)
-    println("Nb roots: ",size(Xi2,2))
-    println("Total: ",t2, "(s)\n")
-    =#
-end
+    if N<=3
+        t3 = @elapsed Xi3  = AlgebraicSolvers.solve(Toric(),P1,verbose=true)
+        println("Nb roots: ",size(Xi2,2))
+        println("Toric: ",t3, "(s)\n")
+    end
+
 
 end

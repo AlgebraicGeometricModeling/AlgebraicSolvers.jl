@@ -2,7 +2,7 @@ using DynamicPolynomials, AlgebraicSolvers, LinearAlgebra
 
 X = @polyvar x y
 
-P = [1-3y+x+2x*y,x*y-x+y-1]
+P = [1-3*x+y+2x*y,x^2+x+y-1]
 Tr = Toric()
 
 R, L = res_matrix(Tr,P)

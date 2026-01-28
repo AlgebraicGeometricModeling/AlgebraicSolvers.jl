@@ -141,7 +141,7 @@ function solve(Mth, P; verbose::Bool=false)
     F = qr!(Nt)
     IB = column_basis(F.R)
 
-    verbose && println("\033[96m-- Basis ", L[IB], "  \033[0m",time()-t0, "(s)"); t0 = time()
+    verbose && println("\033[96m-- Basis ", length(IB), "  \033[0m",time()-t0, "(s)"); t0 = time()
 
     M = _mult_matrices(F.R, L, IB, X)
     verbose && println("\033[96m-- Mult matrices \033[0m",time()-t0, "(s)"); t0 = time()
