@@ -8,7 +8,8 @@ M = DynamicPolynomials.monomials(X,0:d)
 s = length(M)
 
 P = (2*rand(n,s)-fill(1.0,n,s))*M
-Xi = AlgebraicSolvers.solve(Macaulay(),P)
+Xi, ms = AlgebraicSolvers.solve(Macaulay(),P)
 
 Er = rel_error(P,Xi)
 println("-- Rel error: ", norm(Er,Inf))
+println("-- Mult sols: ", ms);

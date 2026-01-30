@@ -150,7 +150,7 @@ function solve(Mth, P; verbose::Bool=false)
     Xi, ms = schur_dcp(M)
     verbose && println("\033[96m-- Eigen diag",  "   \033[0m",time()-t0, "(s)"); t0 = time()
 
-    Xi
+    Xi, ms
 end
 
 function solve(mth::Symbol, P::Vector; verbose::Bool = false)

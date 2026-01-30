@@ -17,7 +17,8 @@ B    = quot_basis(Mth,P)
 N, L = tnf(Mth, P)
     
 
-Xi = AlgebraicSolvers.solve(Mth,P;verbose=true)
+Xi, ms = AlgebraicSolvers.solve(Mth,P;verbose=true)
 
 Er = rel_error(P,Xi)
 println("-- Rel. error: ", norm(Er,Inf))
+println("-- Mult sols: ", ms);

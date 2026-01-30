@@ -1,29 +1,16 @@
-using DynamicPolynomials, AlgebraicSolvers
+using DynamicPolynomials, AlgebraicSolvers, LinearAlgebra
 
 X = @polyvar x y
-n = length(X)
 
-A0 = DynamicPolynomials.monomials(1+x+x^2+y+x*y)
-A1 = DynamicPolynomials.monomials(1+x+y+x*y+x^2+x^2*y)
-A2 = DynamicPolynomials.monomials(1+x+x^2)
+P = [1-3*x+y+2x*y,x^2+x+y-1]
+Tr = Toric()
 
-#= 
-p1= rand(length(A1))'*A1
-p2= rand(length(A2))'*A2
-=#
-p1= rand(length(A0))'*A0
-p2= rand(length(A0))'*A0
+R, L = res_matrix(Tr,P)
+N, L = tnf(Tr,P)
+B = quot_basis(Tr,P)
+M = mult_matrices(Tr,P,X)
 
-P = [p1,p2]
-
-Mth = Toric()
-R, L  = res_matrix(Mth,P)
-N, _ = LinearAlgebra.nullspace(R)
-B =  quot_basis(Mth,P)
-
-Xi = AlgebraicSolvers.solve(Toric(),P; verbose=true)
-
-#println("-- sol ", Xi)
-Er = rel_error(P,Xi,X)
+Xi, ms = AlgebraicSolvers.solve(Tr, P; verbose=true)
+Er = rel_error(P,Xi)
 println("-- Rel error: ", norm(Er,Inf));
-
+println("-- Mult sols: ", ms);
