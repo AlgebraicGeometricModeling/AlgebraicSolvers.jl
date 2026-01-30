@@ -1,16 +1,26 @@
-    using Groebner, AlgebraicSolvers, DynamicPolynomials
+using LinearAlgebra, AbstractAlgebra, AlgebraicSolvers, Groebner
+
 GB = Grobner((P,X) -> Groebner.groebner(P, ordering = Groebner.DegRevLex(X)),
-             (p,G) -> Groebner.normalform(p,G),
+              (p,G) -> Groebner.normalform(p,G),
               G -> Groebner.quotient_basis(G)
              )
 
-N=4
-println("\nKatsura ",N)
-P = Groebner.Examples.katsuran(N)
-Xi, G, B  = AlgebraicSolvers.solve(GB,P,verbose=true);
+R, (x,y) = QQ["x","y"]
 
+n = 2
+d = 3
 
-P1 = convert_DP(P)
-X = DynamicPolynomials.variables(P1)
-Er = rel_error(P1, Xi, X)
+M =  AbstractAlgebra.monomials((1+x+y)^d)
+
+P = [x^2+1.0, y^2-2.0]
+
+#P = [sum(m*rand(Int64) for m in M), sum(m*rand(Int64) for m in M) ]
+
+Xi, ms, G,B = AlgebraicSolvers.solve(GB,P; verbose=true)
+
+#println("-- sol ", Xi)
+
+Er = rel_error(P,Xi)
 println("-- Rel error: ", norm(Er,Inf));
+println("-- Mult sols: ", ms);
+

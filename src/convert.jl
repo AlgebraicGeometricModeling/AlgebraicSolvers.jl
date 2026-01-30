@@ -55,3 +55,12 @@ function convert_DP(P::Vector, C::Type=Float64)
     return [as_polynomial(p, X, C) for p in P]
 end
 
+export as_polynomial_DP
+function as_polynomial_DP(P::Vector, C::Type=typeof(first(AbstractAlgebra.coefficients(P[1]))) )
+    R = parent(P[1])
+    n = length(AbstractAlgebra.gens(R))
+    X = (DynamicPolynomials.@polyvar x[1:n] monomial_order = Graded{Reverse{LexOrder}})[1]
+
+    return [as_polynomial(p, X, C) for p in P]
+end
+

@@ -365,3 +365,8 @@ function rel_error(P, Xi::Matrix, X = DP.variables(P))
     r
 end
 
+
+function rel_error(P::Vector{AbstractAlgebra.Generic.MPoly{C}}, Xi::Matrix) where {C}
+    P1 = as_polynomial_DP(P)
+    return rel_error(P1, Xi)
+end

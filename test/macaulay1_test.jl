@@ -16,6 +16,6 @@ M = mult_matrices(Mc,P)
 Xi, ms = AlgebraicSolvers.solve(:macaulay, P; verbose=true)
 Er = rel_error(P,Xi,X)
 println("-- Rel error: ", norm(Er,Inf));
+println("-- Mult sols: ", ms);
 
-Xi
 

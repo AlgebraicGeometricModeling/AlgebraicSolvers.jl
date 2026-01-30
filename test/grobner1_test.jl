@@ -1,25 +1,23 @@
-using LinearAlgebra, AbstractAlgebra, AlgebraicSolvers, Groebner
+using AlgebraicSolvers, DynamicPolynomials, Groebner, LinearAlgebra
 
-GB = Grobner((P,X) -> Groebner.groebner(P, ordering = Groebner.DegRevLex(X)),
-              (p,G) -> Groebner.normalform(p,G),
-              G -> Groebner.quotient_basis(G)
-             )
+Mth = Grobner((P,X) -> Groebner.groebner(P, ordering = Groebner.DegRevLex(X)),
+            (p,G) -> Groebner.normalform(p,G),
+             G -> Groebner.quotient_basis(G)
+            )
 
-R, (x,y) = QQ["x","y"]
+X = @polyvar x y
 
-n = 2
-d = 3
+P = [-2+y-y^2+x^2*y, 1-3x+y+x*y^2]
+P = [x^2+1, y^2-2]
 
-M =  AbstractAlgebra.monomials((1+x+y)^d)
+B0 = quot_basis(Mth,P)
+N, L = tnf(Mth,P)
+M = mult_matrices(Mth,P)
 
-P = [x^2+1.0, y^2-2.0]
+Xi, ms, G, B  = AlgebraicSolvers.solve(Mth, P; verbose=true)
 
-#P = [sum(m*rand(Int64) for m in M), sum(m*rand(Int64) for m in M) ]
+Er = rel_error(P,Xi)
+println("-- Rel error: ", norm(Er,Inf));
+println("-- Mult sols: ", ms);
 
-Xi, ms, G,B = AlgebraicSolvers.solve(GB,P; verbose=true)
-
-#println("-- sol ", Xi)
-
-#Er = rel_error(P,Xi,[x,y])
-#println("-- Rel error: ", norm(Er,Inf));
-
+ 
