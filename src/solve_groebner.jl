@@ -211,11 +211,12 @@ end
 """
 
 ```
-Xi, G, B = solve(Mth::Grobner, P::Vector; verbose = false)
+Xi, ms, G, B = solve(Mth::Grobner, P::Vector; verbose = false)
 ```
 Solve the system of polynomials `P`. It outputs:
 
  -  `Xi` the complex solution points, one per column of `Xi`
+ -  `ms` the vector of their multiplicities
  -  `G` the computed Grobner basis
  -  `B` the basis of the quotient by the ideal of the equations
 
