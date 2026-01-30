@@ -106,12 +106,13 @@ function solve(::Val{:macaulay}, P; verbose::Bool = false ) solve(Macaulay(),P; 
 
 
 """
-    Xi = solve(Macaulay(), P)
+    Xi, ms = solve(Macaulay(), P)
 
  - `P` polynomial system
 
 
 Solve the system P=[p1, ..., pn], building Sylvester matrix of all monomial multiples mi*pi in degree ≤ ρ.
+It outputs the solutions `Xi` as a matrix of points, one per column, and the vector of their multiplicities `ms`.
 
 The default value for ρ is ∑ deg(pi) - n + 1.
 

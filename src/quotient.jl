@@ -107,12 +107,12 @@ end
 
 """
 
-    solve(Mth, P; verbose = false)
+    Xi, ms = solve(Mth, P; verbose = false)
 
  - `P` polynomial system
 
 Solve the system or polynomials `P=[p1, ..., pn]`, building Sylvester matrix `res_matrix(Mth,P)`.
-
+It outputs the solutions `Xi` as a matrix of points, one per column, and the vector of their multiplicities `ms`.
 
 Example
 =======
@@ -123,7 +123,7 @@ X = @polyvar x y
 
 P = [y - x*y + x^2+ y^2,  1 + y + x + x^2]
 
-Xi = solve(Macaulay(), P; verbose=true)
+Xi, ms = solve(Macaulay(), P; verbose=true)
 ```
 """
 function solve(Mth, P; verbose::Bool=false)
