@@ -14,13 +14,15 @@ X = DP.variables(P)
 
 R, L = res_matrix(Mth, P)
 
-N, _ = LinearAlgebra.nullspace(R)
+N, Ib = LinearAlgebra.nullspace(R)
 
 B = quot_basis(Mth,P)
 
 M = mult_matrices(Mth,P)
 
-Xi  = AlgebraicSolvers.solve(Macaulay(),P,verbose=true)
+ms = multiplicities(v)
 
+Xi, ms  = AlgebraicSolvers.solve(Macaulay(),P,verbose=true)
 Er = rel_error(P, Xi, X)
 println("-- Rel error: ", norm(Er,Inf));
+println("-- Sol mult: ", ms);

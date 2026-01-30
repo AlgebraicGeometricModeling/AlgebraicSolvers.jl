@@ -146,7 +146,8 @@ function solve(Mth, P; verbose::Bool=false)
     M = _mult_matrices(F.R, L, IB, X)
     verbose && println("\033[96m-- Mult matrices \033[0m",time()-t0, "(s)"); t0 = time()
 
-    Xi = eigdiag(M)
+    #Xi = eigdiag(M)
+    Xi, ms = schur_dcp(M)
     verbose && println("\033[96m-- Eigen diag",  "   \033[0m",time()-t0, "(s)"); t0 = time()
 
     Xi

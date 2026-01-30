@@ -12,15 +12,14 @@ d = 3
 
 M =  AbstractAlgebra.monomials((1+x+y)^d)
 
-#P = [x1^2+1.0, x2^2-2.0]
-P = [
-    sum(m*rand(Int64) for m in M),
-    sum(m*rand(Int64) for m in M)
-]
+P = [x^2+1.0, y^2-2.0]
 
-Xi,G,B = AlgebraicSolvers.solve(GB,P)
+#P = [sum(m*rand(Int64) for m in M), sum(m*rand(Int64) for m in M) ]
+
+Xi, ms, G,B = AlgebraicSolvers.solve(GB,P; verbose=true)
+
 #println("-- sol ", Xi)
 
-#Er = rel_error(P,Xi,X)
+#Er = rel_error(P,Xi,[x,y])
 #println("-- Rel error: ", norm(Er,Inf));
 

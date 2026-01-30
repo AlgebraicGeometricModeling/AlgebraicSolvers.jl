@@ -43,7 +43,11 @@ It outputs
  - `L` array of monomials indexing the columns of `R`
 
 """
-function res_matrix(Mth::Macaulay, P, X=DP.variables(P), rho =  Mth.degree(P),  ish = Mth.is_homogeneous(P) )
+function res_matrix(Mth::Macaulay, P, Q = nothing)
+    X=DP.variables(P)
+    rho = Mth.degree(P)
+    ish = Mth.is_homogeneous(P)
+    
     if ish
         L = [m for m in DP.monomials(X, rho)]
         Q = [DP.monomials(X,rho-DP.maxdegree(P[i])) for i in 1:length(P)]
@@ -51,6 +55,7 @@ function res_matrix(Mth::Macaulay, P, X=DP.variables(P), rho =  Mth.degree(P),  
         L = [m for m in DP.monomials(X, 0:rho)]
         Q = [DP.monomials(X,0:rho-DP.maxdegree(P[i])) for i in 1:length(P)]
     end
+
     M = []
     for i in 1:length(P)
         for m in Q[i]
@@ -100,7 +105,6 @@ function quot_basis(::Val{:macaulay}, P) quot_basis(Macaulay(),P) end
 function solve(::Val{:macaulay}, P; verbose::Bool = false ) solve(Macaulay(),P; verbose=verbose) end
 
 
-export solved
 """
     Xi = solve(Macaulay(), P)
 
@@ -158,12 +162,12 @@ function solve(Mth::Macaulay, P;
     
     verbose && println("\033[96m-- Mult matrices  \033[0m",time()-t0, "(s)"); t0 = time()
 
-    Xi = eigdiag(M)
+    Xi, ms = schur_dcp(M)
     verbose && println("\033[96m-- Eigen diag",  "  \033[0m ",time()-t0, "(s)"); t0 = time()
     if (ish)
         for i in 1:size(Xi,2) Xi[:,i]/=LinearAlgebra.norm(Xi[:,i]) end
     end
-    Xi
+    Xi, ms
     
 end
 

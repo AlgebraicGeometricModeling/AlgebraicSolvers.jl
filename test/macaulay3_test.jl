@@ -14,7 +14,7 @@ DP = DynamicPolynomials
 Mth = Macaulay()
 verbose = true
 
- rho = Mth.degree(P)
+rho = Mth.degree(P)
 ish = Mth.is_homogeneous(P)
 
 verbose && println("\033[96m-- Degrees = ", map(p->DP.maxdegree(p),P),"   rho = ", rho, "   Homogeneity = ", ish, "\033[0m")

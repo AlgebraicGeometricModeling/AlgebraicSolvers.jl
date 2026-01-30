@@ -1,4 +1,4 @@
-export alpha_beta, jacobian, newton_iter, newton_improve!, rel_error
+export alpha_beta, jacobian, newton_iter, newton_improve!
 
 #=
 function der(p::Polynomial{C,T}, v::PolyVar{C}) where {C,T}

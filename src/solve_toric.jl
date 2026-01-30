@@ -58,4 +58,5 @@ end
 
 function res_matrix(::Val{:toric}, P)  res_matrix(Toric(),P) end
 function tnf(::Val{:toric}, P)  tnf(Toric(),P) end
+function quot_basis(::Val{:toric}, P)  quot_basis(Toric(),P) end
 function solve(::Val{:toric}, P; verbose::Bool = false )  solve(Toric(),P; verbose=verbose) end

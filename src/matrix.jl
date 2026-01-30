@@ -22,15 +22,14 @@ function kernel(A::Matrix)
 end
 
 export nullspace
-function LinearAlgebra.nullspace(R::AbstractSparseMatrix)
+function LinearAlgebra.nullspace(R::AbstractSparseMatrix; tol::Float64=1.e-10)
 
     s = size(R,2)
 
     Rr = R[:,end:-1:1]
 
-
     F = qr(Rr)
-    l = rank(F.R)
+    l = rank(F.R; tol = tol)
     r = s-l
     
 
@@ -241,6 +240,58 @@ function mult_matrix(B, X, N, Nidx, ish = false)
     R
 end
 
+
+export multiplicities
+
+function multiplicities(v)
+
+    r =size(v,1)
+    ms = [Int64[] for i in 1:r]
+
+    Used = Dict{Int64, Bool}()
+    for i in 1:r
+        if !get(Used,i,false)
+            push!(ms[i],i)
+        end
+        for j = i+1:r
+            if !get(Used,j,false) && norm(v[j]-v[i])<5.e-3
+                push!(ms[i],j)
+                Used[j] = true
+                #println("-> ", ms, " ", i, " ", j)
+            end
+        end
+    end
+    I = findall(m -> length(m)>0, ms)
+    return ms[I]
+end
+
+export schur_dcp
+function schur_dcp(M)
+    lbd = randn(length(M))
+    lbd /= LinearAlgebra.norm(lbd)
+
+    M0 = sum(M[i]*lbd[i] for i in 1:length(M))
+    
+    T, Z, v = schur(ComplexF64.(M0))
+    #println("... eig   ", t, "(s)"); t0=time()
+    ms = multiplicities(v)
+    #println("... ",ms)
+    
+    n = length(M)
+    r = length(ms)
+
+    Xi = fill(zero(eltype(v)),n,r)
+    Tr = [Z'*M[i]*Z for i in 1:n]
+
+    for k in 1:r
+          for i in 1:n
+            Xi[i,k] = 1/length(ms[k])*tr(Tr[i][ms[k],ms[k]])
+        end
+    end
+    Xi, length.(ms), Z
+end
+
+
 function eigdiag(M)
 
     M0 = sum(M[i]*rand() for i in 1:length(M))
@@ -262,11 +313,13 @@ function eigdiag(M)
     for j in 1:length(M)
         Yj = Z*M[j]*E
         for i in 1:size(M0,1)
-            X[j,i]= Yj[i,i] #(Y[:,i]\Yj[:,i])[1] #D[i,i]
+            X[j,i] = Yj[i,i] #(Y[:,i]\Yj[:,i])[1] #D[i,i]
         end
     end
     X
 end
+
+
 
 function (p::DynamicPolynomials.Polynomial)(x::Vector)
     return p(x...)
@@ -301,15 +354,12 @@ Vector of relative errors of P at the points X
 function rel_error(P, Xi::Matrix, X = DP.variables(P))
     r = fill(0.0, length(P), size(Xi,2))
     n = size(Xi,2)
+
     for i in 1: size(Xi,2)
         for j in 1:length(P)
             V = Xi[:,i]
             r[j,i]= norm(DP.coefficients(DP.subs(P[j],X=>V)))
-            s = 0.0
-            m = DP.monomials(P[j])
-            c = DP.coefficients(P[j])
-            s = dot(norm.(c),norm.(DP.subs(m, X => V)))
-            r[j,i]/=s
+            r[j,i]/=norm(DP.coefficients(P[j]))
         end
     end
     r

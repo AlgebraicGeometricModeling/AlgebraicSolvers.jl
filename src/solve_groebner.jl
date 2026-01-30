@@ -2,7 +2,7 @@
 import AbstractAlgebra: gens, exponent_vectors
 
 export mult_matrices, solve_groebner, reduce_by,   
-    prolong, border, normform
+    prolong, border, tnf
 
 
 export Grobner
@@ -64,7 +64,7 @@ function _reduced_by(p,G)
     r
 end
 
-function normform(Mth, G::AbstractVector, B)
+function tnf(Mth::Grobner, G::AbstractVector, B)
     r = length(B)
     Mnx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:r]...)
 
@@ -179,13 +179,13 @@ end
 ```
 Computes the Truncated Normal Form on `B^+` where `B` is the basis of the quotient by the ideal (`P`), formed by the monomials which are not in the inital of (`P`).
 """
-function tnf(Mth::Grobner,P)
+function tnf(Mth::Grobner, P)
 
     X = DynamicPolynomials.variables(P)
     G = Mth.grobner_basis(P,X)
     B = sort(as_monomial.(Mth.quotient_basis(G)))
     Gf = [convert_coeff(g, Float64) for g in G]
-    N, II = normform(Mth, Gf, B)
+    N, II = tnf(Mth, Gf, B)
     l = 1; m0 =1
     for (m,i) in II
         l = max(l,i)
@@ -203,7 +203,7 @@ function mult_matrices(Mth::Grobner,P)
     G = Mth.grobner_basis(P,X)
     B = sort(as_monomial.(Mth.quotient_basis(G)))
     Gf = [convert_coeff(g, Float64) for g in G]
-    N, II = normform(Mth, Gf, B)
+    N, II = tnf(Mth, Gf, B)
     M = mult_matrices(Mth, X, N, B, II)
 
 end
@@ -261,29 +261,26 @@ function _solve_grobner_DP(Mth::Grobner, P; verbose=false)
     
     X = DynamicPolynomials.variables(P)
 
-    verbose && print("\033[96m-- Computing Grobner basis \033[0m")
     t = @elapsed G = Mth.grobner_basis(P,X)
-    verbose && println(t, "s")
+    verbose && println("\033[96m-- Computing Grobner basis \033[0m",t, "(s)")
 
-    verbose && print("\033[96m-- Computing quotient basis \033[0m")
     t = @elapsed B = sort(as_monomial.(Mth.quotient_basis(G))); 
-    verbose && println(t, "s")
+    verbose && println("\033[96m-- Computing quotient basis \033[0m",t, "(s)")
 
     Gf = [convert_coeff(g, Float64) for g in G]
 
-    verbose && print("\033[96m-- Computing normal form    \033[0m")
-    t = @elapsed N, II = normform(Mth, Gf, B)
-    verbose && println(t, "s")
+    t = @elapsed N, II = tnf(Mth, Gf, B)
+    verbose && println("\033[96m-- Computing normal form    \033[0m", t, "(s)")
 
-    verbose && print("\033[96m-- Computing mult matrices  \033[0m")
+    
     t = @elapsed  M = mult_matrices(Mth, X, N, B, II)
-    verbose && println(t, "s")
+    verbose && println("\033[96m-- Computing mult matrices  \033[0m", t, "(s)")
     
-    verbose && print("\033[96m-- Joint diagonalisation    \033[0m")
-    t = @elapsed Xi, E, Info = MultivariateSeries.diagonalization(M)
-    verbose && println(t, "s")
+    #t = @elapsed Xi = eigdiag(M)
+    t = @elapsed Xi, ms = schur_dcp(M)
+    verbose && println("\033[96m-- Schur  decomposition    \033[0m", t, "(s)")
     
-    return Xi, G, B
+    return Xi, ms, G, B, N
 end
 
 
