@@ -9,10 +9,10 @@ P=[ x0^2 + 2*x1^2 + 2*x2^2 + 2*x3^2 + 2*x4^2 - x0,
  x0 + 2*x1 + 2*x2 + 2*x3 + 2*x4 - 1
 ]
 
-R, L = res_matrix(Mc,P)
-N, L = tnf(Mc,P)
+R, L = res_matrix(P,Mc)
+N, L = tnf(P,Mc)
 
-B = quot_basis(:macaulay,P)
+B = quot_basis(P, :macaulay)
 
 N, _ = LinearAlgebra.nullspace(R)
 
@@ -20,13 +20,13 @@ F = qr!(N')
 U = F.R 
 IB = column_basis(U)
 
-M = mult_matrices(Mc,P)
+M = mult_matrices(P,variables(P),Mc)
 Xi = eigdiag(M)
 
-Xi, ms = AlgebraicSolvers.solve(Mc, P; verbose=true)
+Xi, ms = AlgebraicSolvers.solve(P, Mc; verbose=true)
 
 
-Er = rel_error(P, Xi, X)
+Er = rel_error(P, Xi)
 println("-- Rel error: ", norm(Er,Inf));
 println("-- Mult sols: ", ms);
 

@@ -23,15 +23,15 @@ for N in 4:12
     println("Homotopy: ",t2, "(s)\n")
 
     if N<=7
-        t1 = @elapsed Xi1  = AlgebraicSolvers.solve(Macaulay(),P1,verbose=true)
+        t1 = @elapsed Xi1, ms  = AlgebraicSolvers.solve(Macaulay(),P1,verbose=true)
         println("Nb roots: ",size(Xi1,2))
         println("Macaulay: ",t1, "(s)\n")
         
     end
 
     if N<=3
-        t3 = @elapsed Xi3  = AlgebraicSolvers.solve(Toric(),P1,verbose=true)
-        println("Nb roots: ",size(Xi2,2))
+        t3 = @elapsed Xi3, ms  = AlgebraicSolvers.solve(Toric(),P1,verbose=true)
+        println("Nb roots: ",size(Xi3,2))
         println("Toric: ",t3, "(s)\n")
     end
 

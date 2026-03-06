@@ -43,7 +43,7 @@ It outputs
  - `L` array of monomials indexing the columns of `R`
 
 """
-function res_matrix(Mth::Macaulay, P, Q = nothing)
+function res_matrix(P, Mth::Macaulay, Q = nothing)
     X=DP.variables(P)
     rho = Mth.degree(P)
     ish = Mth.is_homogeneous(P)
@@ -99,14 +99,8 @@ function qr_basis(N, L, ish = false)
     B, N*F.Q
 end
 
-function res_matrix(::Val{:macaulay}, P) res_matrix(Macaulay(),P) end
-function tnf(::Val{:macaulay}, P) tnf(Macaulay(),P) end
-function quot_basis(::Val{:macaulay}, P) quot_basis(Macaulay(),P) end
-function solve(::Val{:macaulay}, P; verbose::Bool = false ) solve(Macaulay(),P; verbose=verbose) end
-
-
 """
-    Xi, ms = solve(Macaulay(), P)
+    Xi, ms = solve(P, Macaulay())
 
  - `P` polynomial system
 
@@ -125,11 +119,11 @@ X = @polyvar x y
 
 P = [2-x*y+x^2,y^2+x-2]
 
-Xi = solve(Macaulay(), P)
+Xi = solve(P, Macaulay())
 
 ```
 """
-function solve(Mth::Macaulay, P;
+function solve(P::AbstractVector, Mth::Macaulay;
                verbose::Bool = false )
 
     rho = Mth.degree(P)
@@ -139,7 +133,7 @@ function solve(Mth::Macaulay, P;
 
     X = DP.variables(P)
 
-    t = @elapsed R, L = res_matrix(Mth, P)
+    t = @elapsed R, L = res_matrix(P, Mth)
     verbose && println("\033[96m-- Macaulay matrix ", size(R,1),"x",size(R,2),"  \033[0m", t, "(s)"); t0 = time()
     if ish 
         L = reverse(L) # graded reverse lex order if default order is Graded{LexOrder}
@@ -171,6 +165,12 @@ function solve(Mth::Macaulay, P;
     Xi, ms
     
 end
+
+
+function res_matrix(P::AbstractVector, ::Val{:macaulay}) res_matrix(P, Macaulay()) end
+function tnf(P::AbstractVector, ::Val{:macaulay}) tnf(P, Macaulay()) end
+function quot_basis(P::AbstractVector, ::Val{:macaulay}) quot_basis(P, Macaulay()) end
+function solve(P::AbstractVector, ::Val{:macaulay}; verbose::Bool = false ) solve(P, Macaulay(); verbose=verbose) end
 
 
 

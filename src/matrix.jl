@@ -22,6 +22,7 @@ function kernel(A::Matrix)
 end
 
 export nullspace
+
 function LinearAlgebra.nullspace(R::AbstractSparseMatrix; tol::Float64=1.e-10)
 
     s = size(R,2)
@@ -242,8 +243,7 @@ end
 
 
 export multiplicities
-
-function multiplicities(v)
+function multiplicities(v, eps = 1.e-5)
 
     r =size(v,1)
     ms = [Int64[] for i in 1:r]
@@ -254,7 +254,7 @@ function multiplicities(v)
             push!(ms[i],i)
         end
         for j = i+1:r
-            if !get(Used,j,false) && norm(v[j]-v[i])<5.e-3
+            if !get(Used,j,false) && norm(v[j]-v[i])<eps
                 push!(ms[i],j)
                 Used[j] = true
                 #println("-> ", ms, " ", i, " ", j)
@@ -296,18 +296,9 @@ function eigdiag(M)
 
     M0 = sum(M[i]*rand() for i in 1:length(M))
 
-    #I0 = inv(M0)
-    #Mg = I0*M[1]
+    E  = LinearAlgebra.eigvecs(M0)
 
-    t = @elapsed E  = LinearAlgebra.eigvecs(M0)
-    #println("... eig   ", t, "(s)"); t0=time()
-    Z  = inv(E) #E\I0
-
-    #t0 = time()
-    #F = schurfact(Mg)
-    #println("... schur ", time()-t0, "(s)"); t0=time()
-    # E = F[:vectors]
-    # Z = E'
+    Z  = inv(E)
 
     X = fill(eltype(E)(0),length(M),size(M0,1))
     for j in 1:length(M)
@@ -318,8 +309,6 @@ function eigdiag(M)
     end
     X
 end
-
-
 
 function (p::DynamicPolynomials.Polynomial)(x::Vector)
     return p(x...)

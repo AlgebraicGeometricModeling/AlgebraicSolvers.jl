@@ -4,6 +4,7 @@ authors = ["mourrain <bernard.mourrain@inria.fr>"]
 version = "0.1.6"
 
 [deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DynamicPolynomials = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
@@ -12,6 +13,6 @@ MultivariateSeries = "08acae6c-c1bf-11e9-0c27-6b1945f8789b"
 
 [compat]
 julia = "1.11 - 1.15"
+DataStructures = "0.18 - 0.30"
 DynamicPolynomials = "0.5 - 0.10 "
 AbstractAlgebra = "0.47 - 0.50"
-MultivariateSeries = "0.1.4 - 0.2"

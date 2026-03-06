@@ -1,13 +1,13 @@
-using Groebner, AlgebraicSolvers
+using Groebner, AlgebraicSolvers, LinearAlgebra
 GB = Grobner((P,X) -> Groebner.groebner(P, ordering = Groebner.DegRevLex(X)),
              (p,G) -> Groebner.normalform(p,G),
               G -> Groebner.quotient_basis(G)
              )
 
-N=4
+N=5
 println("\nKatsura ",N)
 P = Groebner.Examples.katsuran(N)
-Xi, ms, G, B  = AlgebraicSolvers.solve(GB,P,verbose=true);
+Xi, ms, G, B  = AlgebraicSolvers.solve(P,GB;verbose=true);
 
 Er = rel_error(P, Xi)
 println("-- Rel error: ", norm(Er,Inf));

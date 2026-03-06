@@ -1,7 +1,7 @@
 export solve, res_matrix, tnf, quot_basis, mult_matrices
 
-function res_matrix(mth::Symbol, P::Vector)
-      res_matrix(Val(mth),P)  
+function res_matrix( P::AbstractVector, mth::Symbol)
+      res_matrix(P,Val(mth))  
 end
 
 
@@ -12,9 +12,9 @@ end
 Computes a basis of the quotient by the ideal P, using `res_matrix(Mth,P)`
 
 """
-function quot_basis(Mth, P)
+function quot_basis(P, Mth)
 
-    R, L = res_matrix(Mth,P)
+    R, L = res_matrix(P, Mth)
 
     N, IB = nullspace(R)
     
@@ -23,47 +23,47 @@ function quot_basis(Mth, P)
     return L[column_basis(F.R)]
 end
 
-function quot_basis(mth::Symbol, P::Vector)
-      quot_basis(Val(mth),P)  
+function quot_basis(P::AbstractVector, mth::Symbol)
+      quot_basis(P, Val(mth))  
 end
 
 
 """
-    N, L, B = tnf(Mth, P)
+    N, L, B = tnf(P, Mth)
 
 Compute the Truncated Normal Form `N` of `P=[p1, ..., pn]`, using `res_matrix(Mth,P)`.
 
 The list `L` is the list of monomials indexing the colmuns of `N`.
 
 """
-function tnf(Mth, P)
-    R, L = res_matrix(Mth, P)
+function tnf(P::AbstractVector, Mth)
+    R, L = res_matrix(P, Mth)
     N, IB = LinearAlgebra.nullspace(R)
     return N', L, IB
 end
 
-function tnf(mth::Symbol, P::Vector)
-      tnf(Val(mth),P)  
+function tnf(P::AbstractVector, mth::Symbol)
+      tnf(P, Val(mth))  
 end
 
 
 export mult_matrices
 """
 ```
-    M = mult_matrices(Mth, P, A = DynamicPolynomials.variables(P))
+    M = mult_matrices(P, DynamicPolynomials.variables(P), Mth)
 ```
 Computes the vector of multiplication matrices `M=[1, M2, ...]` by the variables in a basis `B` of the quotient by the ideal (`P`), using `res_matrix(Mth,P)`.
 """
-function mult_matrices(Mth, P, X = DynamicPolynomials.variables(P))
-    R, L = res_matrix(Mth,P)
+function mult_matrices(P::AbstractVector, X, Mth)
+    R, L = res_matrix(P, Mth)
     N, _ = LinearAlgebra.nullspace(R)
     F  = qr(N')
     IB = column_basis(F.R)
     _mult_matrices(F.R,L,IB,X)
-
 end
 
 export _mult_matrices
+
 function _mult_matrices(N, L, IB, X)
     M0i = inv(N[:, IB])
     
@@ -81,6 +81,7 @@ function _mult_matrices(N, L, IB, X)
     end
     M
 end
+
 
 function _mult_matrices_h(N, L, IB, X, v0)
 
@@ -107,7 +108,7 @@ end
 
 """
 
-    Xi, ms = solve(Mth, P; verbose = false)
+    Xi, ms = solve(P, Mth; verbose = false)
 
  - `P` polynomial system
 
@@ -123,15 +124,15 @@ X = @polyvar x y
 
 P = [y - x*y + x^2+ y^2,  1 + y + x + x^2]
 
-Xi, ms = solve(Macaulay(), P; verbose=true)
+Xi, ms = solve(P, Macaulay(); verbose=true)
 ```
 """
-function solve(Mth, P; verbose::Bool=false)
+function solve(P::AbstractVector, Mth; verbose::Bool=false)
 
     X = DynamicPolynomials.variables(P)
     
     t0 = time()
-    R, L = res_matrix(Mth,P)
+    R, L = res_matrix(P, Mth)
     verbose && println("\033[96m-- Resultant matrix ", size(R,1),"x",size(R,2),  "   \033[0m",time()-t0, "(s)"); t0 = time()
 
     N, IB = LinearAlgebra.nullspace(R)
@@ -153,8 +154,8 @@ function solve(Mth, P; verbose::Bool=false)
     Xi, ms
 end
 
-function solve(mth::Symbol, P::Vector; verbose::Bool = false)
-      solve(Val(mth),P;verbose=verbose)  
+function solve(P::AbstractVector, mth::Symbol; verbose::Bool = false)
+      solve(P,Val(mth);verbose=verbose)  
 end
 
 

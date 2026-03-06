@@ -16,7 +16,7 @@ P = [x^2+1.0, y^2-2.0]
 
 #P = [sum(m*rand(Int64) for m in M), sum(m*rand(Int64) for m in M) ]
 
-Xi, ms, G,B = AlgebraicSolvers.solve(GB,P; verbose=true)
+Xi, ms, G,B = AlgebraicSolvers.solve(P,GB; verbose=true)
 
 #println("-- sol ", Xi)
 

@@ -6,14 +6,15 @@ P = [x*y-x^2, y^2+x*y-x+y]
 
 Mc = Macaulay()
 
-B= quot_basis(Mc,P)
+B= quot_basis(P,Mc)
 
 
-N, L = tnf(Mc,P)
-B = quot_basis(Mc,P)
-M = mult_matrices(Mc,P)
+N, L = tnf(P,Mc)
+B = quot_basis(P,Mc)
+M = mult_matrices(P,variables(P), Mc)
 
-Xi, ms = AlgebraicSolvers.solve(:macaulay, P; verbose=true)
+Xi, ms = AlgebraicSolvers.solve(P, :macaulay; verbose=true)
+
 Er = rel_error(P,Xi,X)
 println("-- Rel error: ", norm(Er,Inf));
 println("-- Mult sols: ", ms);

@@ -17,11 +17,11 @@ p2= rand(length(A0))'*A0
 P = [p1,p2]
 
 Mth = Toric()
-R, L  = res_matrix(Mth,P)
+R, L  = res_matrix(P,Mth)
 N, _ = LinearAlgebra.nullspace(R)
-B =  quot_basis(Mth,P)
+B =  quot_basis(P,Mth)
 
-Xi, ms = AlgebraicSolvers.solve(Toric(),P; verbose=true)
+Xi, ms = AlgebraicSolvers.solve(P,Toric(); verbose=true)
 
 #println("-- sol ", Xi)
 Er = rel_error(P,Xi)

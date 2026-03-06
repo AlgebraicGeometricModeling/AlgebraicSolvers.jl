@@ -64,7 +64,7 @@ function _reduced_by(p,G)
     r
 end
 
-function tnf(Mth::Grobner, G::AbstractVector, B)
+function tnf(G::AbstractVector, B, Mth::Grobner)
     r = length(B)
     Mnx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:r]...)
 
@@ -109,12 +109,12 @@ export mult_matrix
 
 """
 ```
-M = mult_matrix(M::Grobner, p, G::AbstractVector, Idx::Dict)
+M = mult_matrix(p, G::AbstractVector, Idx::Dict, M::Grobner)
 ```
 Compute the matrix of multication by `p` modulo `g` in the basis associated to the basis dictionary `Idx`. It is assumed that `g` is a Groebner basis and that the quotient is finite dimensional.
 
 """
-function mult_matrix(Mth::Grobner, p, G::AbstractVector, Idx::Dict)
+function mult_matrix(p, G::AbstractVector, Idx::Dict, Mth::Grobner)
     delta = length(Idx)
     M = fill(zero(first(coefficients(G[1]))),delta,delta)        
     for key in Idx
@@ -141,15 +141,13 @@ M = mult_matrix(p, G::AbstractVector, B::AbstractVector)
 Compute the matrix of multication by `p` modulo `G` in the basis `B`. It is assumed that `G` is a Groebner basis and that the quotient is finite dimensional.
 
 """
-function mult_matrix(Mth::Grobner, p, G::AbstractVector, B)
+function mult_matrix(p, G::AbstractVector, B, Mth::Grobner)
     Idx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:length(B)]...)
-    return mult_matrix(Mth, p, G, Idx)
+    return mult_matrix(p, G, Idx, Mth)
 end
 
 
-
-
-function mult_matrices(Mth::Grobner, X, N, B::AbstractVector, Idx::Dict)
+function mult_matrices(X, N, B::AbstractVector, Idx::Dict, Mth::Grobner)
     M = typeof(N)[]
     for x in X
         Bx = B*x
@@ -159,15 +157,14 @@ function mult_matrices(Mth::Grobner, X, N, B::AbstractVector, Idx::Dict)
     return M
 end
 
-
 export quot_basis
 """
 ```
-    B = quot_basis(Mth::Grobner,P)
+    B = quot_basis(P, Mth::Grobner)
 ```
 Computes the basis `B` of the quotient by the ideal (P), formed by the monomials which are not in the inital of (P).
 """
-function quot_basis(Mth::Grobner,P)
+function quot_basis(P, Mth::Grobner)
     X = DynamicPolynomials.variables(P)
     G = Mth.grobner_basis(P,X)
     B = sort(as_monomial.(Mth.quotient_basis(G))); 
@@ -175,17 +172,17 @@ end
 
 """
 ```
-    B = tnf(Mth::Grobner,P)
+    B = tnf(P, Mth::Grobner)
 ```
 Computes the Truncated Normal Form on `B^+` where `B` is the basis of the quotient by the ideal (`P`), formed by the monomials which are not in the inital of (`P`).
 """
-function tnf(Mth::Grobner, P)
+function tnf(P::AbstractVector, Mth::Grobner)
 
     X = DynamicPolynomials.variables(P)
     G = Mth.grobner_basis(P,X)
     B = sort(as_monomial.(Mth.quotient_basis(G)))
     Gf = [convert_coeff(g, Float64) for g in G]
-    N, II = tnf(Mth, Gf, B)
+    N, II = tnf(Gf, B, Mth)
     l = 1; m0 =1
     for (m,i) in II
         l = max(l,i)
@@ -198,20 +195,19 @@ function tnf(Mth::Grobner, P)
     return N, L
 end
 
-function mult_matrices(Mth::Grobner,P)
+function mult_matrices(P::AbstractVector, X, Mth::Grobner)
     X = DynamicPolynomials.variables(P)
     G = Mth.grobner_basis(P,X)
     B = sort(as_monomial.(Mth.quotient_basis(G)))
     Gf = [convert_coeff(g, Float64) for g in G]
-    N, II = tnf(Mth, Gf, B)
-    M = mult_matrices(Mth, X, N, B, II)
-
+    N, II = tnf(Gf, B, Mth)
+    M = mult_matrices(X, N, B, II, Mth)
 end
 
 """
 
 ```
-Xi, ms, G, B = solve(Mth::Grobner, P::Vector; verbose = false)
+Xi, ms, G, B = solve(P::AbstractVector, Mth::Grobner; verbose = false)
 ```
 Solve the system of polynomials `P`. It outputs:
 
@@ -236,7 +232,7 @@ X = @polyvar x y
 
 P = [-2+y-y^2+x^2*y, 1-3x+y+x*y^2]
 
-Xi, G, B = AlgebraicSolvers.solve(Mth, P; verbose = true)
+Xi, G, B = AlgebraicSolvers.solve(P, Mth; verbose = true)
 
 
 using AbstractAlgebra
@@ -245,20 +241,20 @@ R ,(x,y) =  polynomial_ring(AbstractAlgebra.QQ, [:x,:y])
 
 P = [x^2*y-y^2, x*y^2-3]
 
-Xi, G, B = AlgebraicSolvers.solve(Mth, P)
+Xi, G, B = AlgebraicSolvers.solve(P, Mth)
 
 ```
 
 """
-function solve(Mth::Grobner, P::Vector{DynamicPolynomials.Polynomial{T,O,C}}; verbose=false) where {T,O,C}
-    _solve_grobner_DP(Mth, P; verbose=verbose)
+function solve(P::Vector{DynamicPolynomials.Polynomial{T,O,C}}, Mth::Grobner; verbose=false) where {T,O,C}
+    _solve_grobner_DP(P, Mth; verbose=verbose)
 end
 
-function solve(Mth::Grobner, P::AbstractVector; verbose=false)
-    _solve_grobner_AA(Mth, P; verbose=verbose)
+function solve(P::AbstractVector, Mth::Grobner; verbose=false)
+    _solve_grobner_AA(P, Mth; verbose=verbose)
 end
   
-function _solve_grobner_DP(Mth::Grobner, P; verbose=false)
+function _solve_grobner_DP(P, Mth::Grobner; verbose=false)
     
     X = DynamicPolynomials.variables(P)
 
@@ -266,15 +262,15 @@ function _solve_grobner_DP(Mth::Grobner, P; verbose=false)
     verbose && println("\033[96m-- Computing Grobner basis \033[0m",t, "(s)")
 
     t = @elapsed B = sort(as_monomial.(Mth.quotient_basis(G))); 
-    verbose && println("\033[96m-- Computing quotient basis \033[0m",t, "(s)")
+    verbose && println("\033[96m-- Computing quotient basis ", length(B)," \033[0m",t, "(s)")
 
     Gf = [convert_coeff(g, Float64) for g in G]
 
-    t = @elapsed N, II = tnf(Mth, Gf, B)
-    verbose && println("\033[96m-- Computing normal form    \033[0m", t, "(s)")
+    t = @elapsed N, II = tnf(Gf, B, Mth)
+    verbose && println("\033[96m-- Computing normal form ", size(N,1), "x", size(N,2),"   \033[0m", t, "(s)")
 
     
-    t = @elapsed  M = mult_matrices(Mth, X, N, B, II)
+    t = @elapsed  M = mult_matrices(X, N, B, II, Mth)
     verbose && println("\033[96m-- Computing mult matrices  \033[0m", t, "(s)")
     
     #t = @elapsed Xi = eigdiag(M)
@@ -285,7 +281,7 @@ function _solve_grobner_DP(Mth::Grobner, P; verbose=false)
 end
 
 
-function _solve_grobner_AA(Mth, P::AbstractVector; verbose=false)
+function _solve_grobner_AA(P::AbstractVector, Mth::Grobner; verbose=false)
 
     R = parent(P[1])
     n = length(AbstractAlgebra.gens(R))
@@ -295,6 +291,6 @@ function _solve_grobner_AA(Mth, P::AbstractVector; verbose=false)
 
     P1 = [as_polynomial(p, X, C) for p in P]
     
-    Xi, G1, B = _solve_grobner_DP(Mth, P1, verbose=verbose) 
+    Xi, G1, B = _solve_grobner_DP(P1, Mth; verbose=verbose) 
 end
 

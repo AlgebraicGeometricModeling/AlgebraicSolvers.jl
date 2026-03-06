@@ -24,7 +24,7 @@ end
 
 """
 ```
-R, L = res_matrix(Mth::Toric, P)
+R, L = res_matrix(P, Mth::Toric)
 ```
 where
  - `P` polynomial system
@@ -35,7 +35,7 @@ It outputs
  - `L` the list of monomials indexing the colums of `R`
 
 """
-function res_matrix(Mth::Toric, P)
+function res_matrix(P::AbstractVector, Mth::Toric)
     M = typeof(P[1])[]
     A = Mth.supports(P)
     mult = one(A[1])
@@ -56,7 +56,14 @@ function res_matrix(Mth::Toric, P)
     R, L
 end
 
-function res_matrix(::Val{:toric}, P)  res_matrix(Toric(),P) end
-function tnf(::Val{:toric}, P)  tnf(Toric(),P) end
-function quot_basis(::Val{:toric}, P)  quot_basis(Toric(),P) end
-function solve(::Val{:toric}, P; verbose::Bool = false )  solve(Toric(),P; verbose=verbose) end
+
+
+
+
+
+
+
+function res_matrix(P::AbstractVector, ::Val{:toric})  res_matrix(P, Toric()) end
+function tnf(P::AbstractVector, ::Val{:toric})  tnf(P, Toric()) end
+function quot_basis(P::AbstractVector, ::Val{:toric})  quot_basis(P, Toric()) end
+function solve(P::AbstractVector, ::Val{:toric}; verbose::Bool = false )  solve(P, Toric(); verbose=verbose) end
