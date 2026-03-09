@@ -7,7 +7,7 @@ end
 
 """
 ```
-    B = quot_basis(Mth, P)
+    B = quot_basis(P, Mth)
 ```
 Computes a basis of the quotient by the ideal P, using `res_matrix(Mth,P)`
 
@@ -52,7 +52,7 @@ export mult_matrices
 ```
     M = mult_matrices(P, DynamicPolynomials.variables(P), Mth)
 ```
-Computes the vector of multiplication matrices `M=[1, M2, ...]` by the variables in a basis `B` of the quotient by the ideal (`P`), using `res_matrix(Mth,P)`.
+Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables in a basis `B` of the quotient by the ideal (`P`), using `res_matrix(P,Mth)`.
 """
 function mult_matrices(P::AbstractVector, X, Mth)
     R, L = res_matrix(P, Mth)

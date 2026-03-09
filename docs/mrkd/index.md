@@ -1,5 +1,10 @@
 # AlgebraicSolvers
 
+The package provides several functions for computing in Artinian Algebras. 
+
+
+
+
 Package for the solution of polynomial systems, using eigen computation.
 It outputs all the complex solutions if the system is zero-dimensional.
 

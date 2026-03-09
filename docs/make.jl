@@ -1,4 +1,4 @@
-using Documenter, AlgebraicSolvers
+using Documenter, AlgebraicSolvers, LinearAlgebra, MultivariatePolynomials
 
 dir="mrkd"
 Expl = map(file -> joinpath("expl", file), filter(x ->endswith(x, "md"), readdir(dir*"/expl")))
