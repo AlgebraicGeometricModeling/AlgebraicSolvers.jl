@@ -1,6 +1,6 @@
-The MultivariateSeries.jl package is licensed under the MIT "Expat" License:
+The AlgebraicSolvers.jl package is licensed under the MIT "Expat" License:
 
-> Copyright (c) 2018-2025: Bernard Mourrain, Inria
+> Copyright (c) 2018-2030: Bernard Mourrain, Inria
 > 
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal

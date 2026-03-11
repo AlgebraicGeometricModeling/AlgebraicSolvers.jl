@@ -16,6 +16,4 @@ AlgebraicSolvers.jl:
 publish:
 	cd AlgebraicSolvers.jl; git add docs; git commit -am "update gh-pages"; git push
 
-clean:
-	rm ./mrkd/expl/*.md
 

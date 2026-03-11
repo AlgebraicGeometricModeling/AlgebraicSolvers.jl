@@ -28,9 +28,9 @@ end
 #------------------------------------------------------------------------
 """
 ```
-dual(p::Polynomial) -> Series{C}
+s = dual(p::Polynomial) -> Series{C,M}
 ```
-Compute the series associated to the polynomial p, replacing
+Compute the series `s`associated to the polynomial p, replacing
 the variables xi by their dual variables dxi. C is the type of coefficients 
 of the polynomial p and M its type of monomials.
 """
@@ -45,9 +45,11 @@ end
 
 """
 ```
-binomial(p::Polynomial) -> Series{C}
+Base.binomial(d::Int64, alpha::Vector{Int64})
 ```
-Multi-index binomial coefficients.
+Multi-index binomial coefficients: ``\\frac{d!}{\\prod_i \\alpha_i!}``.
+One should have ``\\alpha_i \\ge 0``and ``\\sum_i \\alpha_i \\le d``.
+
 """
 function Base.binomial(d::Int64, alpha::Vector{Int64})
   r = binomial(d, alpha[1])
@@ -209,7 +211,7 @@ end
 #----------------------------------------------------------------------
 """
 ```
-sparse_pol(w, E, X) -> Polynomial{true,C}
+sparse_pol(w, E, X) -> Polynomial
 ```
 Compute the polynomial ``∑ ωᵢ X^E[i,:]`` with coefficients ``ωᵢ`` and monomial exponents ``E[i,:]``.
 """
