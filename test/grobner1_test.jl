@@ -2,10 +2,11 @@ using AlgebraicSolvers, DynamicPolynomials, Groebner, LinearAlgebra
 
 
 GB=Grobner(
-    Groebner.DegRevLex,
-    Groebner.groebner,
-    Groebner.normalform,
-    Groebner.quotient_basis
+    Groebner.DegRevLex,      # function of the variables defining the monomial ordering
+    Groebner.groebner,       # function for computing Grobner basis
+    Groebner.normalform,     # function that computes the normal form of a polynomial
+                             # w.r.t a Grobner basis 
+    Groebner.quotient_basis  # function that computes a basis of the quotient algebra
 )
 
 X = @polyvar x y
