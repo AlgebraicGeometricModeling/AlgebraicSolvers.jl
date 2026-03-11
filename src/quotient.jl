@@ -9,7 +9,7 @@ end
 ```
     B = quot_basis(P, Mth)
 ```
-Computes a basis of the quotient by the ideal P, using `res_matrix(Mth,P)`
+Computes a basis of the quotient by the ideal P, using `res_matrix(P,Mth)`
 
 """
 function quot_basis(P, Mth)
@@ -31,7 +31,7 @@ end
 """
     N, L, B = tnf(P, Mth)
 
-Compute the Truncated Normal Form `N` of `P=[p1, ..., pn]`, using `res_matrix(Mth,P)`.
+Compute the Truncated Normal Form `N` of `P=[p1, ..., pn]`, using `res_matrix(P,Mth)`.
 
 The list `L` is the list of monomials indexing the colmuns of `N`.
 
@@ -111,21 +111,10 @@ end
     Xi, ms = solve(P, Mth; verbose = false)
 
  - `P` polynomial system
+ - `Mth` class specifying the solver.
 
-Solve the system or polynomials `P=[p1, ..., pn]`, building Sylvester matrix `res_matrix(Mth,P)`.
+Solve the system of polynomials `P=[p1, ..., pn]`, using Sylvester matrix `res_matrix(P,Mth)`.
 It outputs the solutions `Xi` as a matrix of points, one per column, and the vector of their multiplicities `ms`.
-
-Example
-=======
-```
-using AlgebraicSolvers, DynamicPolynomials
-
-X = @polyvar x y
-
-P = [y - x*y + x^2+ y^2,  1 + y + x + x^2]
-
-Xi, ms = solve(P, Macaulay(); verbose=true)
-```
 """
 function solve(P::AbstractVector, Mth; verbose::Bool=false)
 

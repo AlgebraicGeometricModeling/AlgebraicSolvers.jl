@@ -51,7 +51,10 @@ mutable struct Series{C,M}
 end
 #----------------------------------------------------------------------
 """
-    Construct the series with the term (c,m).
+```
+series(c::C, m::M)
+```
+Construct the series with the term (c,m).
 """
 function series(c::C, m::M) where {C, M <: AbstractMonomial}
     Series{C,M}(OrderedDict(m => c))
@@ -59,9 +62,9 @@ end
 
 """
 ```
-    series(t::OrderedDict{M,C})
+series(t::OrderedDict{M,C})
 ```
-    Construct the series from the OrderedDict t.
+Construct the series from the OrderedDict t.
 """
 function series(t::OrderedDict{M,C}) where {C, M <: AbstractMonomial}
      Series{C,M}(t)
@@ -69,24 +72,24 @@ end
 
 """
 ```
-    series(c::AbstractVector, m::AbstractVector)
+series(c::AbstractVector, m::AbstractVector)
 ```
-    Construct the series with the vectors of monomials m and coefficients c. 
+Construct the series with the vectors of monomials `m` and coefficients `c`. 
 """
 function series(c::AbstractVector,  m::AbstractVector )
     series(OrderedDict([m[i] => c[i] for i in 1:length(m)]))
 end
 
 """
-   Construct the series from an array of pairs  m=>c where m is a monomial and c the associate coefficient.
+```
+series(s::Vector{Pair{M,C}})
+```
+Construct the series from an array of pairs  m=>c where m is a monomial and c the associate coefficient.
 """
 function series(s::Vector{Pair{M,C}}) where {C, M <: AbstractMonomial}
     series(OrderedDict(s))
 end
 
-#function series(Lm::AbstractVector{M}, Lc::AbstractVector{C}) where {C <: Number, M <: AbstractMonomial}
-#    Series{C,M}(OrderedDict(Lm[i]=> Lc[i] for i in 1:length(Lm)))
-#end
 
 MultivariatePolynomials.terms(p::Series) = p.terms
 MultivariatePolynomials.monomials(p::Series) = keys(p.terms)
@@ -131,9 +134,6 @@ function setindex!(s::Series{C,M}, v, m::M) where {C, M}
     end
 end
 
-#start(p::Series) = start(p.terms)
-#next(p::Series, state) = next(p.terms, state)
-#done(p::Series, state) = done(p.terms, state)
 Base.iterate(p::Series) = Base.iterate(p.terms)
 Base.iterate(p::Series, state) = Base.iterate(p.terms, state)
 
@@ -302,7 +302,7 @@ end
 #import DynamicPolynomials: maxdegree
 """
 ```
-maxdegree(σ::Series) -> Int64
+    maxdegree(σ::Series) -> Int64
 ```
 Maximal degree of the monomials of the moments of the series `σ`.
 """
@@ -311,9 +311,9 @@ MultivariatePolynomials.maxdegree(s::Series) = max(maxdegree.(monomials(s))...)
 #----------------------------------------------------------------------
 """
 ```
-inv(m :: Monomial)
+    inv(m :: Monomial)
 ```
- return the inverse monomial with opposite exponents.
+return the inverse monomial with opposite exponents.
 """
 function Base.inv(m:: M) where M <: AbstractMonomial
     M(variables(m),-exponents(m))
@@ -330,12 +330,12 @@ end
 
 #----------------------------------------------------------------------
 """
-
+```
      *(v::Variable,   σ::Series{C,M}) -> Series{C,M}
      *(m::Monomial,   σ::Series{C,M}) -> Series{C,M}
      *(t::Term,       σ::Series{C,M}) -> Series{C,M}
      *(p::Polynomial, σ::Series{C,M}) -> Series{C,M}
-
+```
 The dual product (or co-product) where variables are inverted in the polynomial and the monomials with positive exponents are kept in the series.
 """
 function *(v::V, s::Series{C,M}) where {C,
@@ -373,7 +373,10 @@ function *(p::P, s::Series{C,M}) where {C,
 end
 
 """
-   Term-wise product of series s by p. All the terms of s are multiplied by p
+```
+    s & p
+```
+Term-wise product of series s by p. All the terms of s are multiplied by p
            If σ = ∑ σ_m m, s & p = ∑_m (σ_m*p) m
 
 """
@@ -399,7 +402,7 @@ end
 
 #----------------------------------------------------------------------
 """
-    Apply the linear functional sigma to p.
+Apply the linear functional sigma to p.
 """
 function (|)(sigma::Series, p) 
     return dot(sigma,p)
@@ -478,7 +481,7 @@ function exponentvect(t, X)
 end
 #----------------------------------------------------------------------
 """
- Compute the primitive ``\\int_v s = v^{-1}*s``
+Compute the primitive ``\\int_v s = v^{-1}*s``
 """
 function integrate(s::Series{C,M}, v::V) where {C,M, V<: AbstractVariable}
     r = Series{C,M}()
@@ -552,28 +555,6 @@ function LinearAlgebra.dot(sigma::Series{C,M}, p::AbstractPolynomial, q::Abstrac
     dot(sigma, p*q)
 end
 
-export series_from_apolar
-"""
-      s = series_from_apolar(F, X0, rescaling = 1, d = maxdegree(F))
-
-Compute the series from the apolar dual of the form F in degree `d`, setting `X0=>1` and rescalling the other variables `X[i] => X[i]/rescaling`
-"""
-function series_from_apolar(F, X0, rescaling = 1, d = maxdegree(F))
-    X = variables(F)
-    if rescaling != 1
-        Y = X[findall(v->v!=X0, X)]
-        P = subs(F,X0=>1, [y=>y/rescaling for y in Y]...)
-    else
-        P = subs(F,X0=>1)
-    end
-    c = coefficients(P)
-    m = monomials(P)
-    for i in 1:length(c)
-        e = exponents(m[i])
-        c[i] /= binomial(d, e)
-    end
-    return dual(P)
-end
 #----------------------------------------------------------------------
 function show(io::IO, p::Series)
     print(io, p)

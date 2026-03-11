@@ -10,7 +10,7 @@ DP = DynamicPolynomials
 
 L = DP.monomials(F)
 m = L[1]
-dF = dual(F,3)
+dF = apolar_dual(F)
 
 L1 = reverse(DP.monomials(X,1))
 L2 = reverse(DP.monomials(X,2))
@@ -19,14 +19,14 @@ H = hankel(dF,L1,L2)
 
 s = series(H, L1, L2)
 
-s1 = dual(subs(dual(dF),X0=>1))
+s1 = apolar_dual(F,X0) 
 D1 = invsys(s1)
 M1, L1 = matrixof(D1)
 
 @assert rank(Matrix{Float64}(M1)) == 7
 
-dG = dual(G,4)
-s2 = dual(subs(dual(dG),X0=>1))
+dG = apolar_dual(G)
+s2 = apolar_dual(G,X0)
 D2 = invsys(s2)
 M2, L2 = matrixof(D2)
 

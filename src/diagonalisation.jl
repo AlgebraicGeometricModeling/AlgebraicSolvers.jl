@@ -38,27 +38,29 @@ function diagonalization_iter(D)
     return X, Y
 end
 
+
+export diagonalization
 """
 ```
-Xi, E, Info =  diagonalization(M::Vector{Matrix{C}}, Info::Dict{String,Any})
+Xi, E, Info =  diagonalization(M::Vector{Matrix{C}}; maxiter::Int64 = 10, epsiter::Float64 = 1.e-3)
 ```
 
-Compute the joint diagonalizaion of the matrice in `M` (assuming it exists).
+Compute the joint diagonalizaion of the matrices in `M` (assuming it exists).
+`maxiter` is the maximum number of iterations and `epsiter` is the threshold error to stop the iterations.
 It outputs
 
     - `Xi` the diagonals row by row, the ith row for the matrix  `M[i]`
     - `E`  the matrix of common eigenvectors so that `M[i] = E*diagm(Xi[i,:])*inv(E)`
 
 """
-function diagonalization(M::Vector{Matrix{C}},
-                         Info = Dict{String,Any}(
-                             "maxIter" => 10,
-                             "epsIter" => 1.e-3)) where C
+function diagonalization(M::Vector{Matrix{C}};
+                         maxiter::Int64 = 10,
+                         epsiter::Float64 = 1.e-3) where {C}
     n  = length(M)
     r  = size(M[1],1)
 
-    N   = (haskey(Info,"maxIter") ? Info["maxIter"] : 10)
-    eps = (haskey(Info,"epsIter") ? Info["epsIter"] : 1.e-3)
+    N   = maxiter 
+    eps = epsiter 
 
     M1 = sum(M[i]*randn(Float64) for i in 1:n)
     E  = eigvecs(M1)
@@ -70,7 +72,11 @@ function diagonalization(M::Vector{Matrix{C}},
     delta = sum(norm.(D))
     #println("diag off: ", err)
 
+    Info = Dict{String,Any}()
+    Info["maxIter"] = N
+    Info["epsIter"] = eps
     Info["d0"] = err
+    
     nit = 0
 
     if err/delta > 5.e-2
@@ -99,4 +105,74 @@ function diagonalization(M::Vector{Matrix{C}},
     end
     return Xi, E, Info
 end
+
+
+function eigdiag(M)
+
+    M0 = sum(M[i]*rand() for i in 1:length(M))
+
+    E  = LinearAlgebra.eigvecs(M0)
+
+    Z  = inv(E)
+
+    X = fill(eltype(E)(0),length(M),size(M0,1))
+    for j in 1:length(M)
+        Yj = Z*M[j]*E
+        for i in 1:size(M0,1)
+            X[j,i] = Yj[i,i] #(Y[:,i]\Yj[:,i])[1] #D[i,i]
+        end
+    end
+    X
+end
+
+
+export multiplicities
+function multiplicities(v, eps = 1.e-5)
+
+    r =size(v,1)
+    ms = [Int64[] for i in 1:r]
+
+    Used = Dict{Int64, Bool}()
+    for i in 1:r
+        if !get(Used,i,false)
+            push!(ms[i],i)
+        end
+        for j = i+1:r
+            if !get(Used,j,false) && norm(v[j]-v[i])<eps
+                push!(ms[i],j)
+                Used[j] = true
+                #println("-> ", ms, " ", i, " ", j)
+            end
+        end
+    end
+    I = findall(m -> length(m)>0, ms)
+    return ms[I]
+end
+
+export schur_dcp
+function schur_dcp(M)
+    lbd = randn(length(M))
+    lbd /= LinearAlgebra.norm(lbd)
+
+    M0 = sum(M[i]*lbd[i] for i in 1:length(M))
+    
+    T, Z, v = schur(ComplexF64.(M0))
+    #println("... eig   ", t, "(s)"); t0=time()
+    ms = multiplicities(v)
+    #println("... ",ms)
+    
+    n = length(M)
+    r = length(ms)
+
+    Xi = fill(zero(eltype(v)),n,r)
+    Tr = [Z'*M[i]*Z for i in 1:n]
+
+    for k in 1:r
+          for i in 1:n
+            Xi[i,k] = 1/length(ms[k])*tr(Tr[i][ms[k],ms[k]])
+        end
+    end
+    Xi, length.(ms), Z
+end
+
 

@@ -31,19 +31,16 @@ end
 
 
 """
-    R, L = res_matrix(Mth::Macaulay, P, X, rho, ish = false)
+    R, L = res_matrix(P, Mth::Macaulay)
 
- - `P` polynomial system
- - `X` (optional) array of variables
- - `rho` (optional) maximal degree of the multiples of P
- - `ish` (optional) set to true if the polynomials are homogeneous
+where `P` the polynomial system.
 
 It outputs 
  - `R` the transpose of Sylvester matrix of all monomial multiples mi*pi in degree ≤ rho.
  - `L` array of monomials indexing the columns of `R`
 
 """
-function res_matrix(P, Mth::Macaulay, Q = nothing)
+function res_matrix(P, Mth::Macaulay)
     X=DP.variables(P)
     rho = Mth.degree(P)
     ish = Mth.is_homogeneous(P)
@@ -64,6 +61,7 @@ function res_matrix(P, Mth::Macaulay, Q = nothing)
     end
     sparse_matrix(M,idx(L)), L
 end
+
 
 function qr_basis(N, L, ish = false)
     Idx= idx(L)

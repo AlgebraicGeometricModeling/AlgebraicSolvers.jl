@@ -47,7 +47,7 @@ end
 ```
 binomial(p::Polynomial) -> Series{C}
 ```
-Multi-index bonomial coefficients.
+Multi-index binomial coefficients.
 """
 function Base.binomial(d::Int64, alpha::Vector{Int64})
   r = binomial(d, alpha[1])
@@ -58,22 +58,50 @@ function Base.binomial(d::Int64, alpha::Vector{Int64})
   r
 end
 
-""""
+
+export apolar_dual
+"""
 ```
-dual(p::AbstractPolynomial, d:: Int64) -> Series{C}
+    s = apolar_dual(p::AbstractPolynomial)
 ```
-Compute the series associated to the tensor p in degree d, using the apolar product.
-The coefficients are of type `C`, which is the promoted type between the type of the coefficients of `p` and `Rational{Int}`.
+Compute the apolar series `s` associated to the symmetric tensor p in degree d.
+The type of the coefficients of `s` is the promoted type between the type of the coefficients of `p` and `Rational{Int}`.
 The coefficients of the monomials `m` of  `p` are divided by the `binomial(d, exponents(m))`.
 """
-function dual(p::AbstractPolynomial, d::Int)
+function apolar_dual(p::AbstractPolynomial)
 
+    d = maxdegree(p)
     C = promote_type(coefficient_type(p),Rational{Int})
     c = coefficients(p)
     m = monomials(p)
 
     return series([m[i]=> C(c[i])/Base.binomial(d,exponents(m[i])) for i in 1:length(c) ])
 end
+
+
+"""
+```
+    s = apolar_dual(F::AbstractPolynomial, X0; rescaling = 1)
+```
+Compute the series `s` from the apolar dual of the form F in degree `d`, setting `X0=>1` and rescalling the other variables `X[i] => X[i]/rescaling`. The type of the coefficients of `s` is the promoted type between the type of the coefficients of `p` and `Rational{Int}`.
+"""
+function apolar_dual(F, X0; rescaling = 1)
+    X = variables(F)
+    d = maxdegree(F)
+    C = promote_type(coefficient_type(F),Rational{Int})
+    if rescaling != 1
+        Y = X[findall(v->v!=X0, X)]
+        P = subs(F,X0=>1, [y=>y/rescaling for y in Y]...)
+    else
+        P = subs(F,X0=>1)
+    end
+    c = coefficients(P)
+    m = monomials(P)
+    
+    return series([m[i]=> C(c[i])/Base.binomial(d,exponents(m[i])) for i in 1:length(c) ])
+
+end
+
 
 """
 Recover the polynomial from the series by duality.
@@ -197,4 +225,4 @@ function sparse_decompose(f, zeta, X, d:: Int64)
     w, Xi = decompose(sigma)
     w, log(Xi,zeta)
 end
-
+#------------------------------------------------------------------------

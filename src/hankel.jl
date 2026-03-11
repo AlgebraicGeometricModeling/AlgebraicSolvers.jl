@@ -36,6 +36,25 @@ function hankel(sigma::Series{C,M}, L1::AbstractVector, L2::AbstractVector) wher
     return [sigma[L1[i]*L2[j]] for i in 1:length(L1), j in 1:length(L2)]
 end
 
+
+#------------------------------------------------------------------------
+"""
+```
+    hankel(p::AbstractPolynomial, d1:: Int64, d2::Int64)
+```
+Compute the so-called Catalecticant matrix of the homogeneous polynomial `p` in bidegree `(d1, d2)`.
+One should have `maxdegree(p)=d1+d2`.
+""" 
+function hankel(p::AbstractPolynomial, d1:: Int64, d2::Int64)
+    d = maxdegree(p)
+    @assert(d == d1+d2)
+    X = variables(p)
+    L1 = monomials(X,d1)
+    L2 = monomials(X,d2)
+    hankel(apolar_dual(p), L1, L2)
+end
+
+
 #------------------------------------------------------------------------
 """
 ```

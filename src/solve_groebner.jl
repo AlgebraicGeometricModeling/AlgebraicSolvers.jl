@@ -15,10 +15,37 @@ Structure which defines
 
 """
 struct Grobner
-    grobner_basis::Function
-    reduce:: Function
-    quotient_basis:: Function
+    grobner_basis ::Function
+    reduce ::Function
+    quot_basis ::Function
 end
+
+"""
+    GB = Grobner(ordering, gbasis, normform, qbasis)
+
+Construct a struture of type `Grobner` where
+
+ - `ordering` specifies the monomial ordering
+ - `gbasis` is the function which computes the Grobner basis
+ - `normform` is the function to reduce modulo a Grobner basis
+ - `qbasis` is the function which provides a basis of the quotient algebra.
+
+## Example:
+```
+using Groebner
+
+GB = Grobner(
+        Groebner.DegRevLex,
+        Groebner.groebner,
+        Groebner.normalform,
+        Groebner.quotient_basis
+    )
+```
+"""
+function Grobner(ordering, gbasis, normform, qbasis)
+    Grobner((P,X = variables(P))->gbasis(P, ordering = ordering(X)), normform, qbasis)
+end
+
 
 function reduce_by(M,p,G)
     Groebner.normalform(G,p)
@@ -68,7 +95,7 @@ function tnf(G::AbstractVector, B, Mth::Grobner)
     r = length(B)
     Mnx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:r]...)
 
-    dB = border(B, variables(G))
+    dB = border(B, union(DynamicPolynomials.variables.(G)...))
 
     for i in 1:length(dB)  Mnx[dB[i]]=r+i  end
 
@@ -166,8 +193,8 @@ Computes the basis `B` of the quotient by the ideal (P), formed by the monomials
 """
 function quot_basis(P, Mth::Grobner)
     X = DynamicPolynomials.variables(P)
-    G = Mth.grobner_basis(P,X)
-    B = sort(as_monomial.(Mth.quotient_basis(G))); 
+    G = Mth.grobner_basis(P)
+    B = sort(as_monomial.(Mth.quot_basis(G))); 
 end
 
 """
@@ -179,8 +206,8 @@ Computes the Truncated Normal Form on `B^+` where `B` is the basis of the quotie
 function tnf(P::AbstractVector, Mth::Grobner)
 
     X = DynamicPolynomials.variables(P)
-    G = Mth.grobner_basis(P,X)
-    B = sort(as_monomial.(Mth.quotient_basis(G)))
+    G = Mth.grobner_basis(P)
+    B = sort(as_monomial.(Mth.quot_basis(G)))
     Gf = [convert_coeff(g, Float64) for g in G]
     N, II = tnf(Gf, B, Mth)
     l = 1; m0 =1
@@ -197,8 +224,8 @@ end
 
 function mult_matrices(P::AbstractVector, X, Mth::Grobner)
     X = DynamicPolynomials.variables(P)
-    G = Mth.grobner_basis(P,X)
-    B = sort(as_monomial.(Mth.quotient_basis(G)))
+    G = Mth.grobner_basis(P)
+    B = sort(as_monomial.(Mth.quot_basis(G)))
     Gf = [convert_coeff(g, Float64) for g in G]
     N, II = tnf(Gf, B, Mth)
     M = mult_matrices(X, N, B, II, Mth)
@@ -223,16 +250,18 @@ Example:
 ```
 using AlgebraicSolvers, DynamicPolynomials, Groebner
 
-Mth = Grobner((P,X) -> Groebner.groebner(P, ordering = Groebner.DegRevLex(X)),
-              (p,G) -> Groebner.normalform(p,G),
-              G -> Groebner.quotient_basis(G)
-             )
+GB=Grobner(
+    Groebner.DegRevLex,
+    Groebner.groebner,
+    Groebner.normalform,
+    Groebner.quotient_basis
+)
 
 X = @polyvar x y 
 
 P = [-2+y-y^2+x^2*y, 1-3x+y+x*y^2]
 
-Xi, G, B = AlgebraicSolvers.solve(P, Mth; verbose = true)
+Xi, ms, G, B = AlgebraicSolvers.solve(P, GB; verbose = true)
 
 
 using AbstractAlgebra
@@ -241,7 +270,7 @@ R ,(x,y) =  polynomial_ring(AbstractAlgebra.QQ, [:x,:y])
 
 P = [x^2*y-y^2, x*y^2-3]
 
-Xi, G, B = AlgebraicSolvers.solve(P, Mth)
+Xi, ms, G, B = AlgebraicSolvers.solve(P, GB)
 
 ```
 
@@ -258,10 +287,10 @@ function _solve_grobner_DP(P, Mth::Grobner; verbose=false)
     
     X = DynamicPolynomials.variables(P)
 
-    t = @elapsed G = Mth.grobner_basis(P,X)
+    t = @elapsed G = Mth.grobner_basis(P)
     verbose && println("\033[96m-- Computing Grobner basis \033[0m",t, "(s)")
 
-    t = @elapsed B = sort(as_monomial.(Mth.quotient_basis(G))); 
+    t = @elapsed B = sort(as_monomial.(Mth.quot_basis(G))); 
     verbose && println("\033[96m-- Computing quotient basis ", length(B)," \033[0m",t, "(s)")
 
     Gf = [convert_coeff(g, Float64) for g in G]

@@ -1,10 +1,11 @@
 using LinearAlgebra, AbstractAlgebra, AlgebraicSolvers, Groebner
 
-GB = Grobner((P,X) -> Groebner.groebner(P, ordering = Groebner.DegRevLex(X)),
-              (p,G) -> Groebner.normalform(p,G),
-              G -> Groebner.quotient_basis(G)
-             )
-
+GB =Grobner(
+    Groebner.DegRevLex,
+    Groebner.groebner,
+    Groebner.normalform,
+    Groebner.quotient_basis
+)
 R, (x,y) = QQ["x","y"]
 
 n = 2
