@@ -33,7 +33,7 @@ s = length(M)
 
 P = randn(n,s)*M
 
-Xi = solve(Macaulay(),P)
+Xi, ms = solve(P,Macaulay())
 
 ```
 
