@@ -1,20 +1,16 @@
 # AlgebraicSolvers
 
 The package provides several functions for computing in Artinian Algebras. 
+These are the quotient of a polynomial ring by a zero-dimensional ideal. The main features include:
 
+ - solution of polynomial systems, via multiplication operators and eigen computation.
+ - resultant matrix constructions
+ - Truncated Normal Form (TNF) computation 
+ - duality and multivariate series
+ - decomposition of polynomial exponential series
+ - inverse systems
 
-
-
-Package for the solution of polynomial systems, using eigen computation.
-It outputs all the complex solutions if the system is zero-dimensional.
-
-It proceeds as follows:
-
- - Compute a Truncated Normal Form (using either resultant constructions or Groebner basis computation)
- - Compute operators of multiplication by the variables in a basis of the quotient algebra.
- - Compute a joint triangularization of the multplication matrices to obtain the (complex) solutions, with their multiplicity.
- 
-
+## Table of contents
 ```@contents
 Pages = map(file -> joinpath("code", file), filter(x ->endswith(x, "md"), readdir("code"))) 
 ```
@@ -22,5 +18,6 @@ Pages = map(file -> joinpath("code", file), filter(x ->endswith(x, "md"), readdi
 
 ## Dependencies
 
-For the solver based on Groebner basis computation, the package `Grobner.jl` is used.
-
+  - `DataStructures .jl`
+  - `DynamicPolynomials.jl`
+  - `AbstractAlgebra.jl`
