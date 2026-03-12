@@ -6,7 +6,7 @@
 ### Bernard Mourrain
 ###
 
-export series, hankel, hankelbasis, matrixof
+export series, hankel, hankelbasis
 
 #-----------------------------------------------------------------------
 """
@@ -104,6 +104,7 @@ function hankelbasis(L1,L2)
 end
 
 
+export matrixof
 """
 ```
 matrixof(P::Vector,L::Vector)
