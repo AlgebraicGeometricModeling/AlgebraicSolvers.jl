@@ -59,14 +59,15 @@ function mult_matrices(P::AbstractVector, X, Mth)
     N, _ = LinearAlgebra.nullspace(R)
     F  = qr(N')
     IB = column_basis(F.R)
-    _mult_matrices(F.R,L,IB,X)
+    mult_matrices(F.R,L,IB,X)
 end
 
-export _mult_matrices
+"""
+Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables `X` in a basis `B = L[IB]` from the Truncated Normal Form `N`, assuming `N[IB,IB]=Id`.
+"""
+function mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X)
 
-function _mult_matrices(N, L, IB, X)
     M0i = inv(N[:, IB])
-    
     Idx = idx(L)
 
     M = Matrix{typeof(N[1,1])}[]
@@ -81,9 +82,10 @@ function _mult_matrices(N, L, IB, X)
     end
     M
 end
-
-
-function _mult_matrices_h(N, L, IB, X, v0)
+"""
+Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables `X` in a basis `B = L[IB]` from the Truncated Normal Form `N`, assuming `N[IB,IB]=Id`.
+"""
+function mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X, v0)
 
     #println("---> ",v0)
     M0i = inv(N[:, IB])
@@ -133,7 +135,7 @@ function solve(P::AbstractVector, Mth; verbose::Bool=false)
 
     verbose && println("\033[96m-- Basis ", length(IB), "  \033[0m",time()-t0, "(s)"); t0 = time()
 
-    M = _mult_matrices(F.R, L, IB, X)
+    M = mult_matrices(F.R, L, IB, X)
     verbose && println("\033[96m-- Mult matrices \033[0m",time()-t0, "(s)"); t0 = time()
 
     #Xi = eigdiag(M)

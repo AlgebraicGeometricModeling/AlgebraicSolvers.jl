@@ -140,10 +140,8 @@ Base.iterate(p::Series, state) = Base.iterate(p.terms, state)
 #----------------------------------------------------------------------
 copy(p::Series{C,M}) where {C, M} = Series{C,M}(copy(p.terms))
 #----------------------------------------------------------------------
-function MultivariatePolynomials.variables(s::Series)
-    for (m, c) in s
-        return variables(m)
-    end
+function DynamicPolynomials.variables(s::Series)
+  union( [variables(m)  for (m, c) in s]...)
 end
 
 #----------------------------------------------------------------------
@@ -543,6 +541,8 @@ end
 #LinearAlgebra.dot(t::AbstractTerm, sigma::Series) = LinearAlgebra.dot(sigma,t)
 
 function LinearAlgebra.dot(sigma::Series{C,M}, p::AbstractPolynomial) where {C,M}
+    if p == zero(p) return zero(C) end
+    
     cf = coefficients(p)
     mn = monomials(p)
 

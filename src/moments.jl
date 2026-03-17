@@ -81,6 +81,10 @@ function apolar_dual(p::AbstractPolynomial)
 end
 
 
+function apolar_dual(s::Series)
+    d = maxdegree(s)
+    return sum(c*m*Base.binomial(d,exponents(m)) for (m,c) in s)
+end
 """
 ```
     s = apolar_dual(F::AbstractPolynomial, X0; rescaling = 1)

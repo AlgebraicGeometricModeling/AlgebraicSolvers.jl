@@ -45,9 +45,9 @@ end
 Compute the so-called Catalecticant matrix of the homogeneous polynomial `p` in bidegree `(d1, d2)`.
 One should have `maxdegree(p)=d1+d2`.
 """ 
-function hankel(p::AbstractPolynomial, d1:: Int64, d2::Int64)
-    d = maxdegree(p)
-    @assert(d == d1+d2)
+function hankel(p::AbstractPolynomial, d1:: Int64, d2::Int64=maxdegree(P-d2))
+    #    d = maxdegree(p)
+    #    @assert(d == d1+d2)
     X = variables(p)
     L1 = monomials(X,d1)
     L2 = monomials(X,d2)

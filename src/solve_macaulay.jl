@@ -23,6 +23,10 @@ function Macaulay()
              P -> !any(is_not_homogeneous, P))
 end
 
+function Macaulay(rho::Int64)
+    Macaulay(P -> rho,
+             P -> !any(is_not_homogeneous, P))
+end
 
 function is_not_homogeneous(p)
     L = [DP.maxdegree(t) for t in DP.monomials(p)]
@@ -148,9 +152,9 @@ function solve(P::AbstractVector, Mth::Macaulay;
     verbose && println("\033[96m-- Basis ", length(IB), "   \033[0m",time()-t0, "(s)"); t0 = time(); 
     
     if ish
-        M = _mult_matrices_h(F.R, L, IB, X, X[1])
+        M = mult_matrices(F.R, L, IB, X, X[1])
     else
-        M = _mult_matrices(F.R, L, IB, X)
+        M = mult_matrices(F.R, L, IB, X)
     end
     
     verbose && println("\033[96m-- Mult matrices  \033[0m",time()-t0, "(s)"); t0 = time()
