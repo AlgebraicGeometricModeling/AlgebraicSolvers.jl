@@ -1,5 +1,6 @@
 
 # norm of off diagonal terms of a square matrix
+export norm_off
 function norm_off(M)
     if size(M[1],1)>1
         return sqrt(sum(abs2(M[i,j]) + abs2(M[j,i]) for i in 1:size(M,1) for j in i+1:size(M,1)))
@@ -75,7 +76,7 @@ function diagonalization(M::Vector{Matrix{C}};
     Info = Dict{String,Any}()
     Info["maxIter"] = N
     Info["epsIter"] = eps
-    Info["d0"] = err
+    Info["diagErr"] = err
     
     nit = 0
 
@@ -122,7 +123,7 @@ function eigdiag(M)
             X[j,i] = Yj[i,i] #(Y[:,i]\Yj[:,i])[1] #D[i,i]
         end
     end
-    X
+    X, E
 end
 
 

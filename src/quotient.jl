@@ -63,6 +63,9 @@ function mult_matrices(P::AbstractVector, X, Mth)
 end
 
 """
+```
+    M = mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X)
+```
 Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables `X` in a basis `B = L[IB]` from the Truncated Normal Form `N`, assuming `N[IB,IB]=Id`.
 """
 function mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X)
@@ -83,7 +86,10 @@ function mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X)
     M
 end
 """
-Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables `X` in a basis `B = L[IB]` from the Truncated Normal Form `N`, assuming `N[IB,IB]=Id`.
+```
+    M = mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X, v0)
+```
+Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables `X/v0` in a basis `B = L[IB]` from the Truncated Normal Form `N`, assuming `N[IB,IB]=Id`.
 """
 function mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X, v0)
 
