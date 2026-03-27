@@ -128,7 +128,19 @@ end
 
 
 export multiplicities
-function multiplicities(v, eps = 1.e-5)
+"""
+   ms = multiplicities(v::AbstractVector, eps = 1.e-5)
+
+Group the values in v by clusters of radius < eps and output the list
+of lists of indices of the clusters
+
+## Example
+julia> multiplicities([0.,3.,0.0000000001])
+2-element Vector{Vector{Int64}}:
+ [1, 3]
+ [2]
+"""
+function multiplicities(v::AbstractVector, eps = 1.e-5)
 
     r =size(v,1)
     ms = [Int64[] for i in 1:r]
@@ -142,7 +154,6 @@ function multiplicities(v, eps = 1.e-5)
             if !get(Used,j,false) && norm(v[j]-v[i])<eps
                 push!(ms[i],j)
                 Used[j] = true
-                #println("-> ", ms, " ", i, " ", j)
             end
         end
     end
@@ -151,7 +162,8 @@ function multiplicities(v, eps = 1.e-5)
 end
 
 export schur_dcp
-function schur_dcp(M)
+
+function schur_dcp(M::AbstractVector, eps::Float64=1.e-5)
     lbd = randn(length(M))
     lbd /= LinearAlgebra.norm(lbd)
 
@@ -159,7 +171,7 @@ function schur_dcp(M)
     
     T, Z, v = schur(ComplexF64.(M0))
     #println("... eig   ", t, "(s)"); t0=time()
-    ms = multiplicities(v)
+    ms = multiplicities(v, eps)
     #println("... ",ms)
     
     n = length(M)
@@ -173,7 +185,7 @@ function schur_dcp(M)
             Xi[i,k] = 1/length(ms[k])*tr(Tr[i][ms[k],ms[k]])
         end
     end
-    Xi, length.(ms), Z
+    Xi, ms, Z, Tr
 end
 
 
