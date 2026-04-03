@@ -28,6 +28,7 @@ function quot_basis(P::AbstractVector, mth::Symbol)
 end
 
 
+
 """
     N, L, B = tnf(P, Mth)
 
@@ -44,6 +45,20 @@ end
 
 function tnf(P::AbstractVector, mth::Symbol)
       tnf(P, Val(mth))  
+end
+
+
+"""
+    N, L, B = tnf(R,L)
+
+Compute the Truncated Normal Form `N` from the resultant matrix R.
+
+The list `L` is the list of monomials indexing the colmuns of `N`.
+
+"""
+function tnf(R::AbstractMatrix)
+    N, IB = LinearAlgebra.nullspace(R)
+    return N', IB
 end
 
 
@@ -66,9 +81,9 @@ end
 ```
     M = mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X)
 ```
-Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables `X` in a basis `B = L[IB]` from the Truncated Normal Form `N`, assuming `N[IB,IB]=Id`.
+Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables `X` in the basis `B = L[IB]` from the Truncated Normal Form `N`, assuming `N[IB,IB]=Id`.
 """
-function mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X)
+function mult_matrices(N::AbstractMatrix, L::AbstractVector, IB::Vector, X)
 
     M0i = inv(N[:, IB])
     Idx = idx(L)
@@ -78,7 +93,7 @@ function mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X)
     for x in X
         J = [get(Idx,L[i]*x,0) for i in IB]
         if  findfirst(x-> x==0, J) == nothing
-            push!(M, (M0i*N[:,J])')
+            push!(M, (M0i*N[:,J]))
         else
             @error "-- Basis*X not in L"
         end
