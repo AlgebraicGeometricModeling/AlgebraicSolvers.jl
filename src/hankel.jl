@@ -40,14 +40,28 @@ end
 #------------------------------------------------------------------------
 """
 ```
+    hankel(s::Series, d1:: Int64, d2::Int64)
+```
+Compute the Hankel matrix of the series `s` in bidegree `(d1, d2)`.
+One should have `maxdegree(s)=d1+d2`.
+""" 
+function hankel(s::Series, d1:: Int64, d2::Int64= maxdegree(s)-d1)
+    X = variables(s)
+    L1 = monomials(X,d1)
+    L2 = monomials(X,d2)
+    hankel(s, L1, L2)
+end
+
+
+#------------------------------------------------------------------------
+"""
+```
     hankel(p::AbstractPolynomial, d1:: Int64, d2::Int64)
 ```
 Compute the so-called Catalecticant matrix of the homogeneous polynomial `p` in bidegree `(d1, d2)`.
 One should have `maxdegree(p)=d1+d2`.
 """ 
-function hankel(p::AbstractPolynomial, d1:: Int64, d2::Int64=maxdegree(P-d2))
-    #    d = maxdegree(p)
-    #    @assert(d == d1+d2)
+function hankel(p::AbstractPolynomial, d1:: Int64, d2::Int64=maxdegree(p)-d1)
     X = variables(p)
     L1 = monomials(X,d1)
     L2 = monomials(X,d2)

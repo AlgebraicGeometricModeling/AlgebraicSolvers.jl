@@ -133,7 +133,6 @@ function tnf(G::AbstractVector, B, Mth::Grobner)
 end
 
 export mult_matrix
-
 """
 ```
 M = mult_matrix(p, G::AbstractVector, Idx::Dict, M::Grobner)

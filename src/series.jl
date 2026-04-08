@@ -70,6 +70,7 @@ function series(t::OrderedDict{M,C}) where {C, M <: AbstractMonomial}
      Series{C,M}(t)
 end
 
+
 """
 ```
 series(c::AbstractVector, m::AbstractVector)
