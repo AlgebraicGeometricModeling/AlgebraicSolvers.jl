@@ -61,7 +61,7 @@ function row_echelon_with_pivots!(A::Matrix{T}, ɛ = T <: Union{Rational,Integer
 end
 
 
-function matrixof(L::Vector{AlgebraicSolvers.Series{T,Mon}}, M::AbstractVector) where {T, Mon}
+function matrixof(L::Vector{Series{T,Mon}}, M::AbstractVector) where {T, Mon}
     Idx = Dict{Monomial{true}, Int64}()
     for (m,i) in zip(M,1:length(M)) Idx[m]=i end
 
@@ -78,12 +78,13 @@ end
 function invsyst!(F::Vector,
                   B0::Vector,
                   IB::Vector,
-                  D0::Vector{AlgebraicSolvers.Series{C,M}},
-                  ID::Vector{AlgebraicSolvers.Series{C,M}},
+                  D0::Vector{Series{C,M}},
+                  ID::Vector{Series{C,M}},
                   Nu::Vector{Vector{Int64}},
                   X,
                   Xi,
-                  theta=1.e-6) where {C,M}
+                  theta=1.e-6;
+                  verbose = false) where {C,M}
     
     n = length(X)
 
@@ -140,7 +141,7 @@ function invsyst!(F::Vector,
     
     # orthogonality to F
     for f in F
-        a = [(ID[j]|f)(Xi,X) for j in J]
+        a = [(ID[j]|f) for j in J]
         if a != fill(zero(C),N)
             A = vcat(A, a')
         end
@@ -175,9 +176,6 @@ function invsyst!(F::Vector,
         return h
     end
     
-    #K  = LinearAlgebra.nullspace(A)
-    #D1 = K'*L
-
     #print(eps(norm(A,Inf)), " ")
     #println("\nA: ",A, "\n",piv)
     A = inv(A[1:r,piv])*A[1:r,:]
@@ -210,14 +208,17 @@ function invsyst!(F::Vector,
  end
 
 
-function invsys(F::Vector, X = variables(F), Xi = fill(0,length(X)), theta=1.e-6)
+function invsys(F::Vector, Xi = fill(0,length(variables(F)));
+                verbose = false, theta::Float64=1.e-6)
+    X = variables(F)
+    n = length(X)
     B = [one(F[1]*1)]
     D = [dual(B[1])]
     ID = typeof(D[1])[]
     IB = []
     Nu = Vector{Int64}[] #Dict{Vector{Int64},Int64}()
     H =  Int64[]
-    n = length(X)
+
     for k in 1:n
         m = B[1]*X[n+1-k]
         Ilambda = integrate(D[1],X,n+1-k)
@@ -227,14 +228,13 @@ function invsys(F::Vector, X = variables(F), Xi = fill(0,length(X)), theta=1.e-6
     mu = 0;
     h  = 1
     while h != 0
-        print(h," ")
+        verbose && print(h," ")
         push!(H,h)
         mu += h
-        h = invsyst!(F,B,IB,D,ID,Nu,X,Xi,theta)
+        h = invsyst!(F,B,IB,D,ID,Nu,X,Xi,theta; verbose = verbose)
     end
-    println(": ",mu)
-    # println(length(ID))
-    B, D, H, Nu
+    verbose && println(": ",mu)
+    D, B, H, Nu
 end
 
 function diff(F,D)
