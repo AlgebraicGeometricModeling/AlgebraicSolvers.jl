@@ -107,7 +107,17 @@ function diagonalization(M::Vector{Matrix{C}};
     return Xi, E, Info
 end
 
+"""
+```
+Xi, E =  eigdiag(M::Vector{Matrix{C}})
+```
 
+Compute the joint diagonalizaion of the matrices in `M`, from the computation of the eigen vectors of a random combination of the matrices in `M`.It outputs
+
+    - `Xi` the points in diagonals of the `E^(-1)*M*E`
+    - `E`  the matrix of  eigenvectors of a random combination of `M`, so that `M[i] = E*diagm(Xi[i,:])*inv(E)`
+
+"""
 function eigdiag(M)
 
     M0 = sum(M[i]*rand() for i in 1:length(M))
@@ -163,6 +173,19 @@ end
 
 export schur_dcp
 
+"""
+```
+Xi, ms, Z =  schur_dcp(M::AbstractVector, eps::Float64=1.e-5)
+```
+
+Compute the joint Schur factorization of `M` from the Schur factorization of a random combination of the `M[i]`. The eigenvalues are clustered within the threshold `eps`, using the function `multiplicities`.
+It outputs
+
+    - `Xi` the points from trace of the Schur blocks
+    - `ms` the indices of the blocks corresponding to the points `Xi`
+    - `Z`  the Schur factor
+
+"""
 function schur_dcp(M::AbstractVector, eps::Float64=1.e-5)
     lbd = randn(length(M))
     lbd /= LinearAlgebra.norm(lbd)

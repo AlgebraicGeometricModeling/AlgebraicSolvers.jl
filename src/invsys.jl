@@ -207,7 +207,19 @@ function invsyst!(F::Vector,
     length(npiv)
  end
 
+"""
 
+    D,B,h,Nu = invsys(F::Vector, Xi::Vector)
+
+Compute the inverse system of the polynomial system `F` at the point `Xi`. It outputs
+
+   - `D` a basis of the inverse system as series in the dual basis of the monomial basis.
+   - `B` the dual monomial basis
+   - `h` the dimensions of the spaces in each degree
+   - `Nu` the indices of the unknowns at each integration
+
+
+"""
 function invsys(F::Vector, Xi = fill(0,length(variables(F)));
                 verbose = false, theta::Float64=1.e-6)
     X = variables(F)
