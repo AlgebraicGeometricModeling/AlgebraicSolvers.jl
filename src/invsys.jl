@@ -75,7 +75,7 @@ function matrixof(L::Vector{Series{T,Mon}}, M::AbstractVector) where {T, Mon}
 end
 
 #----------------------------------------------------------------------
-function invsyst!(F::Vector,
+function invsys!(F::Vector,
                   B0::Vector,
                   IB::Vector,
                   D0::Vector{Series{C,M}},
@@ -224,7 +224,10 @@ function invsys(F::Vector, Xi = fill(0,length(variables(F)));
                 verbose = false, theta::Float64=1.e-6)
     X = variables(F)
     n = length(X)
-    B = [one(F[1]*1)]
+
+    C = coefficienttype(F[1])
+    C = promote_type(C, eltype(Xi), Rational{BigInt})
+    B = [one(F[1]*one(C))]
     D = [dual(B[1])]
     ID = typeof(D[1])[]
     IB = []
@@ -243,9 +246,9 @@ function invsys(F::Vector, Xi = fill(0,length(variables(F)));
         verbose && print(h," ")
         push!(H,h)
         mu += h
-        h = invsyst!(F,B,IB,D,ID,Nu,X,Xi,theta; verbose = verbose)
+        h = invsys!(F,B,IB,D,ID,Nu,X,Xi,theta; verbose = verbose)
     end
-    verbose && println(": ",mu)
+    verbose && println(": mu = ",mu)
     D, B, H, Nu
 end
 
