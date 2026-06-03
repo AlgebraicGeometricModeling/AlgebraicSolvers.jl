@@ -31,6 +31,7 @@ function decompose(H::Vector{Matrix{C}}, lambda::Vector, rkf::Function) where {C
 
     if r > 1
         Xi, E, DiagInfo = diagonalization(M)
+
     else
         Xi = fill(zero(C),n,r)
         for i in 1:n
@@ -44,6 +45,7 @@ function decompose(H::Vector{Matrix{C}}, lambda::Vector, rkf::Function) where {C
     Vxi = (E\ V[:,1:r]')
 
     Info = Dict{String,Any}( "diagonalization" => DiagInfo)
+
     return Xi, Uxi, Vxi, Info
 end
 
@@ -67,36 +69,68 @@ function decompose(sigma::Series{R,M},
                    rkf::Function = eps_rkf(1.e-6),
                    weps::Float64=1.e-5) where {R, M}
 
-    d = maxdegree(sigma)
+    dgs = maxdegree.(monomials(sigma))
+    d = max(dgs...)
+
     X = variables(sigma)
-
+    X0 = X[1]
+        
     d0 = div(d-1,2); d1 = d-1-d0
-    B0 = monomials(X, 0:d0)
-    B1 = monomials(X, 0:d1)
+    is_hmg = allequal(dgs)
 
-    H = Matrix{R}[hankel(sigma, B0, B1)]
-    for x in X
-        push!(H, hankel(sigma, B0, [b*x for b in B1]))
+    if is_hmg
+        B0 = monomials(X, d0)
+        B1 = monomials(X, d1)
+        H = Matrix{R}[]
+        for x in X
+            push!(H, hankel(sigma, B0, B1*x))
+        end
+    else
+        B0 = monomials(X, 0:d0)
+        B1 = monomials(X, 0:d1)
+
+        H = Matrix{R}[hankel(sigma, B0, B1)]
+        for x in X
+            push!(H, hankel(sigma, B0, [b*x for b in B1]))
+        end
     end
-
+    
     lambda = [1.0]
     Xi, Uxi, Vxi = decompose(H, lambda,  rkf)
 
     n, r = size(Xi)
 
-    w = fill(one(eltype(Xi)),r)
+    if is_hmg
 
-    for i in 1:r
-        w[i] = Xi[1,i]
-        Xi[:,i]/= Xi[1,i]
-        w[i]*= Uxi[1,i]*Vxi[i,1]
+        V = AlgebraicSolvers.vdm(B0,Xi)
+        b = [dot(sigma,m) for m in B0*X0^(d1+1)]
+
+        w = V\b
+        
+        #=for i in 1:r
+            nrm = norm(Xi[:,i])
+            w[i] *= nrm^d;
+            Xi[:,i] /= nrm
+        end
+        =#
+        return w, Xi
+
+    else
+        w = fill(one(eltype(Xi)),r)
+        for i in 1:r
+            w[i] = Xi[1,i]
+            Xi[:,i]/= Xi[1,i]
+            w[i]*= Uxi[1,i]*Vxi[i,1]
+        end
+
+        # remove weights below threshold weps
+        I = Bool[abs(w[i])>weps for i in 1:length(w)]
+
+        return w[I], Xi[2:end,I]
     end
-
-    # remove weights below threshold weps
-    I = Bool[abs(w[i])>weps for i in 1:length(w)]
-    return w[I], Xi[2:end,I]
-
 end
+
+
 
 #------------------------------------------------------------------------
 function ms_decompose(sigma::Series{R,M},

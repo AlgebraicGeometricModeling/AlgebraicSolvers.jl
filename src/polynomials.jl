@@ -181,3 +181,18 @@ function prodset(X, Y)
     end
     res
 end
+
+export vdm
+"""
+  Vandermonde matrix of polynomials in L evaluated at the points Xi
+"""
+function vdm(L::AbstractVector, Xi::AbstractMatrix)
+    X = variables(L)
+    r  = size(Xi,2)
+    un = one(L[1])
+    V = fill(zero(Xi[1,1]),length(L),r)
+    for i in 1:r
+        V[:,i] = coefficient.(subs.(L, X=> Xi[:,i]),un)
+    end
+    return V
+end
