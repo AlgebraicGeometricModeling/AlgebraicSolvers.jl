@@ -556,6 +556,10 @@ function LinearAlgebra.dot(sigma::Series{C,M}, p::AbstractPolynomial, q::Abstrac
     dot(sigma, p*q)
 end
 
+export localize
+function localize(sigma, v)
+ series(collect(coefficients(sigma)), monomial.(subs.(monomials(sigma), v=> 1)) )
+end
 #----------------------------------------------------------------------
 function show(io::IO, p::Series)
     print(io, p)

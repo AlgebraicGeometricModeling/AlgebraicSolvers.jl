@@ -104,7 +104,6 @@ function decompose(sigma::Series{R,M},
 
         V = AlgebraicSolvers.vdm(B0,Xi)
         b = [dot(sigma,m) for m in B0*X0^(d1+1)]
-
         w = V\b
         
         #=for i in 1:r
@@ -116,17 +115,23 @@ function decompose(sigma::Series{R,M},
         return w, Xi
 
     else
-        w = fill(one(eltype(Xi)),r)
+        #= w = fill(one(eltype(Xi)),r)
         for i in 1:r
             w[i] = Xi[1,i]
             Xi[:,i]/= Xi[1,i]
             w[i]*= Uxi[1,i]*Vxi[i,1]
         end
+        =#
+        V = AlgebraicSolvers.vdm(B0,Xi[2:end,:])
+        b = [dot(sigma,m) for m in B0]
 
+        w = V\b
+        return w, Xi[2:end,:]
+        
         # remove weights below threshold weps
-        I = Bool[abs(w[i])>weps for i in 1:length(w)]
+        # I = Bool[abs(w[i])>weps for i in 1:length(w)]
+        #return w[I], Xi[2:end,I]
 
-        return w[I], Xi[2:end,I]
     end
 end
 
