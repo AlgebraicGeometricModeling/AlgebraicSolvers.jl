@@ -557,8 +557,11 @@ function LinearAlgebra.dot(sigma::Series{C,M}, p::AbstractPolynomial, q::Abstrac
 end
 
 export localize
-function localize(sigma, v)
- series(collect(coefficients(sigma)), monomial.(subs.(monomials(sigma), v=> 1)) )
+"""
+   Localize the series `sigma` on the chart `x0=1`
+"""
+function localize(sigma::Series, x0)
+   series(collect(coefficients(sigma)), monomial.(subs.(monomials(sigma), x0=> 1)))
 end
 #----------------------------------------------------------------------
 function show(io::IO, p::Series)
