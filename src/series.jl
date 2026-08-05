@@ -586,6 +586,14 @@ function subs_moment(sigma::Series, sbs... )
     
 end
 export subs_moment
+
+
+function cst(sigma::Series{C,M}) where {C,M}
+    v = get(sigma.terms, one(first(monomials(sigma))), 0)
+    return cst(v)
+end
+
+
 #----------------------------------------------------------------------
 function show(io::IO, p::Series)
     print(io, p)

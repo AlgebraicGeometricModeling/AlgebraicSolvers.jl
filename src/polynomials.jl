@@ -196,3 +196,12 @@ function vdm(L::AbstractVector, Xi::AbstractMatrix)
     end
     return V
 end
+
+function cst(c::Number)
+    return c
+end
+
+function cst(p::AbstractPolynomial)
+    coefficient(p, one(monomials(p)[1]))
+end
+export cst
