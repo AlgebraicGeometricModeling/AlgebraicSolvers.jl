@@ -8,9 +8,10 @@ export Macaulay
 
 """
 Structure for the construction of Macaulay resultant solvers. It stores
-  - `degree :: Function P->` degree of regularity +1 (default: `P ->  sum(DynamicPolynomials.maxdegree(P[i])-1 for i in 1:length(P)) + 1`) 
+  - `degree :: Function P->` degree ≤ ρ (default: `P ->  sum(DynamicPolynomials.maxdegree(P[i])-1 for i in 1:length(P)) + 1`) 
   -  `is_homogeneous :: Function P->` boolean testing if the system is homogeneous or not (default: `P -> !any(AlgebraicSolvers.is_not_homogeneous, P)`)
 
+The default value for ρ is ∑ deg(pi) - n + 1.
 """
 struct Macaulay
     degree :: Function 
@@ -40,8 +41,11 @@ end
 where `P` the polynomial system.
 
 It outputs 
- - `R` the transpose of Sylvester matrix of all monomial multiples mi*pi in degree ≤ rho.
+ - `R` the transpose of Sylvester matrix of all monomial multiples mi*pi in degree  ≤ ρ.
+
  - `L` array of monomials indexing the columns of `R`
+
+The matrix `R` has a sparse representation.
 
 """
 function res_matrix(P, Mth::Macaulay)
@@ -66,6 +70,7 @@ function res_matrix(P, Mth::Macaulay)
     sparse_matrix(M,idx(L)), L
 end
 
+function res_matrix(P::AbstractVector, ::Val{:macaulay}) res_matrix(P, Macaulay()) end
 
 function qr_basis(N, L, ish = false)
     Idx= idx(L)
@@ -101,75 +106,7 @@ function qr_basis(N, L, ish = false)
     B, N*F.Q
 end
 
-"""
-    Xi, ms = solve(P, Macaulay())
 
- - `P` polynomial system
-
-
-Solve the system P=[p1, ..., pn], building Sylvester matrix of all monomial multiples mi*pi in degree ≤ ρ.
-It outputs the solutions `Xi` as a matrix of points, one per column, and the vector of their multiplicities `ms`.
-
-The default value for ρ is ∑ deg(pi) - n + 1.
-
-Example
--------
-```
-using AlgebraicSolvers, DynamicPolynomials
-
-X = @polyvar x y
-
-P = [2-x*y+x^2,y^2+x-2]
-
-Xi = solve(P, Macaulay())
-
-```
-"""
-function solve(P::AbstractVector, Mth::Macaulay;
-               verbose::Bool = false )
-
-    rho = Mth.degree(P)
-    ish = Mth.is_homogeneous(P)
-
-    verbose && println("\033[96m-- Degrees = ", map(p->DP.maxdegree(p),P),"   rho = ", rho, "   Homogeneity = ", ish, "\033[0m")
-
-    X = DP.variables(P)
-
-    t = @elapsed R, L = res_matrix(P, Mth)
-    verbose && println("\033[96m-- Macaulay matrix ", size(R,1),"x",size(R,2),"  \033[0m", t, "(s)"); t0 = time()
-    if ish 
-        L = reverse(L) # graded reverse lex order if default order is Graded{LexOrder}
-        R = R[:,end:-1:1] 
-    end
-    
-    N, _ = LinearAlgebra.nullspace(R)
-    verbose && println("\033[96m-- Null space ",size(N,1),"x",size(N,2), "   \033[0m",time()-t0, "(s)"); t0 = time()
-
-    Nt = N';
-    F = qr!(Nt)
-    IB = column_basis(F.R)
-
-    verbose && println("\033[96m-- Basis ", length(IB), "   \033[0m",time()-t0, "(s)"); t0 = time(); 
-    
-    if ish
-        M = mult_matrices(F.R, L, IB, X, X[1])
-    else
-        M = mult_matrices(F.R, L, IB, X)
-    end
-    
-    verbose && println("\033[96m-- Mult matrices  \033[0m",time()-t0, "(s)"); t0 = time()
-
-    Xi, ms = schur_dcp(M)
-    verbose && println("\033[96m-- Eigen diag",  "  \033[0m ",time()-t0, "(s)"); t0 = time()
-    if (ish)
-        for i in 1:size(Xi,2) Xi[:,i]/=LinearAlgebra.norm(Xi[:,i]) end
-    end
-    Xi, ms
-    
-end
-
-
-function res_matrix(P::AbstractVector, ::Val{:macaulay}) res_matrix(P, Macaulay()) end
 function tnf(P::AbstractVector, ::Val{:macaulay}) tnf(P, Macaulay()) end
 function quot_basis(P::AbstractVector, ::Val{:macaulay}) quot_basis(P, Macaulay()) end
 function solve(P::AbstractVector, ::Val{:macaulay}; verbose::Bool = false ) solve(P, Macaulay(); verbose=verbose) end

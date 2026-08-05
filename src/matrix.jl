@@ -34,8 +34,8 @@ function LinearAlgebra.nullspace(R::AbstractSparseMatrix; tol::Float64=1.e-10)
     r = s-l
     
 
-    IB = [i for i in s:-1:1][F.pcol]
-    IB = IB[l+1:end]
+#    IB = [i for i in s:-1:1][F.pcol]
+#    IB = IB[l+1:end]
 
     U = F.R
     G = Array(U[1:l,l+1:end])
@@ -73,7 +73,7 @@ function LinearAlgebra.nullspace(R::AbstractSparseMatrix; tol::Float64=1.e-10)
     #    N = N[:,reverse(invperm(F0.p))]
     N = N[reverse(invperm(F0.p)),:]
 =#
-    return N, IB
+    return N
 end
 
 #=

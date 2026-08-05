@@ -5,47 +5,95 @@ export mult_matrices, solve_groebner, reduce_by,
     prolong, border, tnf
 
 
-export Grobner
 """
 Structure which defines
 
-  - `grobner_basis :: Function (P,X) -> ` grobner basis of `P` with variables `X`
+  - `grobner_basis :: Function (P) -> ` grobner basis of `P` with variables `X`
   - `reduce :: Function (p, G) -> ` normal form of the polynomial `p` modulo G 
-  - `quotient_basis :: Function P -> ` basis of the quotient by the ideal(`P`)
+  - `quot_basis :: Function P -> ` basis of the quotient by the ideal(`P`)
 
 """
-struct Grobner
+mutable struct GbSolver
     grobner_basis ::Function
     reduce ::Function
     quot_basis ::Function
+    defined::Bool
 end
 
+export GbSolver
+
 """
-    GB = Grobner(ordering, gbasis, normform, qbasis)
+    GB = GbSolver(gbasis, normform, qbasis)
 
-Construct a struture of type `Grobner` where
+Construct a structure of type `GbSolver` where
 
- - `ordering` specifies the monomial ordering
- - `gbasis` is the function which computes the Grobner basis
- - `normform` is the function to reduce modulo a Grobner basis
+ - `gbasis` is the function which computes the GbSolver basis
+ - `normform` is the function to reduce modulo a GbSolver basis
  - `qbasis` is the function which provides a basis of the quotient algebra.
 
 ## Example:
 ```
-using Groebner
+using AlgebraicSolvers, Groebner
 
-GB = Grobner(
-        Groebner.DegRevLex,
-        Groebner.groebner,
+GB = GbSolver(
+        P->Groebner.groebner(P, ordering = Groebner.DegRevLex(variables(P))),
         Groebner.normalform,
         Groebner.quotient_basis
     )
 ```
+
+It can be used as an argument of [`solve`](@ref), [`tnf`](@ref), 
 """
-function Grobner(ordering, gbasis, normform, qbasis)
-    Grobner((P,X = variables(P))->gbasis(P, ordering = ordering(X)), normform, qbasis)
+function GbSolver(gbasis, normform, qbasis)
+    GbSolver(gbasis, normform, qbasis,true)
 end
 
+"""
+    GB = GbSolver()
+
+Construct a GbSolver. If a Groebner engine is available, from a package such as `Groebner`, it uses it otherwise it returns `nothing`.
+
+```
+using AlgebraicSolvers, DynamicPolynomials, Groebner
+
+GB = GbSolver()
+
+```
+This returns
+```
+GbSolver(
+        P->Groebner.groebner(P, ordering = Groebner.DegRevLex(variables(P))),
+        Groebner.normalform,
+        Groebner.quotient_basis
+    ) 
+```
+"""
+function GbSolver()
+     if isdefined(Main,:Groebner)
+         return GbSolver(P -> Main.Groebner.groebner(P, ordering = Main.Groebner.DegRevLex(variables(P))),
+                         Main.Groebner.normalform,
+                         Main.Groebner.quotient_basis
+                         )
+    else
+        @error "No Groebner engine defined: add e.g. using Groebner"
+        return  nothing #GbSolver(X->(), P->(), P->(), false)
+    end
+
+end
+
+function check_gb(Mth::GbSolver)
+ if isdefined(Main,:Groebner)
+     if !Mth.defined
+         Mth.grobner_basis = P ->Main.Groebner.groebner(P, ordering = Main.Groebner.DegRevLex(variables(P)))
+         Mth.reduce = Main.Groebner.normalform
+         Mth.quot_basis = Main.Groebner.quotient_basis
+     end
+     return Mth
+    else
+        @error "No Groebner engine available: add e.g. using Groebner"
+        return nothing
+    end
+end
 
 function reduce_by(M,p,G)
     Groebner.normalform(G,p)
@@ -71,7 +119,7 @@ function last_divisible_by(m,L)
     findlast(t->DynamicPolynomials.divides(t,m),L)
 end
 
-
+#=
 function _reduced_by(p,G)
     L  = [DynamicPolynomials.leading_monomial(g) for g in G]
     m  = DynamicPolynomials.leading_monomial(p)
@@ -90,8 +138,10 @@ function _reduced_by(p,G)
     end
     r
 end
+=#
 
-function tnf(G::AbstractVector, B, Mth::Grobner)
+function tnf_gb(G::AbstractVector, B, Mth::GbSolver; verbose = false)
+  
     r = length(B)
     Mnx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:r]...)
 
@@ -135,12 +185,12 @@ end
 export mult_matrix
 """
 ```
-M = mult_matrix(p, G::AbstractVector, Idx::Dict, M::Grobner)
+M = mult_matrix(p, G::AbstractVector, Idx::Dict, M::GbSolver)
 ```
 Compute the matrix of multication by `p` modulo `g` in the basis associated to the basis dictionary `Idx`. It is assumed that `g` is a Groebner basis and that the quotient is finite dimensional.
 
 """
-function mult_matrix(p, G::AbstractVector, Idx::Dict, Mth::Grobner)
+function mult_matrix(p, G::AbstractVector, Idx::Dict, Mth::GbSolver)
     delta = length(Idx)
     M = fill(zero(first(coefficients(G[1]))),delta,delta)        
     for key in Idx
@@ -162,18 +212,18 @@ end
 
 """
 ```
-M = mult_matrix(p, G::AbstractVector, B::AbstractVector)
+M = _mult_matrix(p, G::AbstractVector, B::AbstractVector)
 ```
 Compute the matrix of multication by `p` modulo `G` in the basis `B`. It is assumed that `G` is a Groebner basis and that the quotient is finite dimensional.
 
 """
-function mult_matrix(p, G::AbstractVector, B, Mth::Grobner)
+function _mult_matrix(p, G::AbstractVector, B, Mth::GbSolver)
     Idx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:length(B)]...)
     return mult_matrix(p, G, Idx, Mth)
 end
 
 
-function mult_matrices(X, N, B::AbstractVector, Idx::Dict, Mth::Grobner)
+function _mult_matrices(X, N, B::AbstractVector, Idx::Dict, Mth::GbSolver)
     M = typeof(N)[]
     for x in X
         Bx = B*x
@@ -186,29 +236,35 @@ end
 export quot_basis
 """
 ```
-    B = quot_basis(P, Mth::Grobner)
+    B = quot_basis(P, Mth::GbSolver; verbose = false)
 ```
 Computes the basis `B` of the quotient by the ideal (P), formed by the monomials which are not in the inital of (P).
 """
-function quot_basis(P, Mth::Grobner)
-    X = DynamicPolynomials.variables(P)
-    G = Mth.grobner_basis(P)
+function quot_basis(P, Mth::GbSolver; verbose = false)
+    
+    t = @elapsed G = Mth.grobner_basis(P)
+    verbose && println("\033[96m-- Groebner basis \033[0m",t, "(s)")
+
     B = sort(as_monomial.(Mth.quot_basis(G))); 
 end
 
 """
 ```
-    B = tnf(P, Mth::Grobner)
+    B = tnf(P, Mth::GbSolver; verbose = false)
 ```
 Computes the Truncated Normal Form on `B^+` where `B` is the basis of the quotient by the ideal (`P`), formed by the monomials which are not in the inital of (`P`).
 """
-function tnf(P::AbstractVector, Mth::Grobner)
+function tnf(P::AbstractVector, Mth::GbSolver; verbose = false)
 
     X = DynamicPolynomials.variables(P)
-    G = Mth.grobner_basis(P)
+    t = @elapsed G = Mth.grobner_basis(P)
+    verbose && println("\033[96m-- Groebner basis \033[0m",t, "(s)")
+
     B = sort(as_monomial.(Mth.quot_basis(G)))
     Gf = [convert_coeff(g, Float64) for g in G]
-    N, II = tnf(Gf, B, Mth)
+    t = @elapsed N, II = tnf_gb(Gf, B, Mth)
+    verbose && println("\033[96m-- TNF ", size(N,1),"x",size(N,2)," \033[0m",t, "(s)")
+    
     l = 1; m0 =1
     for (m,i) in II
         l = max(l,i)
@@ -218,10 +274,11 @@ function tnf(P::AbstractVector, Mth::Grobner)
         L[i] = m
     end
 
-    return N, L
+    return N, L, [II[b] for b in B]
 end
 
-function mult_matrices(P::AbstractVector, X, Mth::Grobner)
+#=
+function _mult_matrices(P::AbstractVector, X, Mth::GbSolver)
     X = DynamicPolynomials.variables(P)
     G = Mth.grobner_basis(P)
     B = sort(as_monomial.(Mth.quot_basis(G)))
@@ -229,17 +286,17 @@ function mult_matrices(P::AbstractVector, X, Mth::Grobner)
     N, II = tnf(Gf, B, Mth)
     M = mult_matrices(X, N, B, II, Mth)
 end
-
+=#
 """
 
 ```
-Xi, ms, G, B = solve(P::AbstractVector, Mth::Grobner; verbose = false)
+Xi, ms, G, B = solve(P::AbstractVector, Mth::GbSolver; verbose = false)
 ```
 Solve the system of polynomials `P`. It outputs:
 
  -  `Xi` the complex solution points, one per column of `Xi`
  -  `ms` the vector of their multiplicities
- -  `G` the computed Grobner basis
+ -  `G` the computed GbSolver basis
  -  `B` the basis of the quotient by the ideal of the equations
 
 If `verbose = true`, the timing of the different steps is printed.
@@ -249,7 +306,7 @@ Example:
 ```
 using AlgebraicSolvers, DynamicPolynomials, Groebner
 
-GB=Grobner(
+GB=GbSolver(
     Groebner.DegRevLex,
     Groebner.groebner,
     Groebner.normalform,
@@ -274,20 +331,20 @@ Xi, ms, G, B = AlgebraicSolvers.solve(P, GB)
 ```
 
 """
-function solve(P::Vector{DynamicPolynomials.Polynomial{T,O,C}}, Mth::Grobner; verbose=false) where {T,O,C}
+function _solve(P::Vector{DynamicPolynomials.Polynomial{T,O,C}}, Mth::GbSolver; verbose=false) where {T,O,C}
     _solve_grobner_DP(P, Mth; verbose=verbose)
 end
 
-function solve(P::AbstractVector, Mth::Grobner; verbose=false)
+function _solve(P::AbstractVector, Mth::GbSolver; verbose=false)
     _solve_grobner_AA(P, Mth; verbose=verbose)
 end
   
-function _solve_grobner_DP(P, Mth::Grobner; verbose=false)
+function _solve_grobner_DP(P, Mth::GbSolver; verbose=false)
     
     X = DynamicPolynomials.variables(P)
 
     t = @elapsed G = Mth.grobner_basis(P)
-    verbose && println("\033[96m-- Computing Grobner basis \033[0m",t, "(s)")
+    verbose && println("\033[96m-- Groebner basis \033[0m",t, "(s)")
 
     t = @elapsed B = sort(as_monomial.(Mth.quot_basis(G))); 
     verbose && println("\033[96m-- Computing quotient basis ", length(B)," \033[0m",t, "(s)")
@@ -309,7 +366,7 @@ function _solve_grobner_DP(P, Mth::Grobner; verbose=false)
 end
 
 
-function _solve_grobner_AA(P::AbstractVector, Mth::Grobner; verbose=false)
+function _solve_grobner_AA(P::AbstractVector, Mth::GbSolver; verbose=false)
 
     R = parent(P[1])
     n = length(AbstractAlgebra.gens(R))
@@ -321,4 +378,5 @@ function _solve_grobner_AA(P::AbstractVector, Mth::Grobner; verbose=false)
     
     Xi, G1, B = _solve_grobner_DP(P1, Mth; verbose=verbose) 
 end
+
 

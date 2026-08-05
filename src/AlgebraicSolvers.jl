@@ -21,6 +21,7 @@ module AlgebraicSolvers
 
   include("decompose.jl")
 
+  include("solve.jl")
   include("solve_macaulay.jl")
   include("solve_toric.jl")
   include("solve_groebner.jl")
