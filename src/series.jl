@@ -558,13 +558,17 @@ end
 
 #----------------------------------------------------------------------
 """
-   Localize the series `sigma` on the chart `x0=1`
+Localize the series `sigma` on the chart `x0=1`, by substituting `x0=>1` in each monomial.
 """
 function localize(sigma::Series, x0)
    series(collect(coefficients(sigma)), monomial.(subs.(monomials(sigma), x0=> 1)))
 end
 export localize
 
+#----------------------------------------------------------------------
+"""
+Construct the series such that the pseudo-moment of a monomial `m` is the same as the pseudo-moment of  the substitution `subs(m, sbs)`.
+"""
 function subs_moment(sigma::Series, sbs )
     
     Lm = monomial.(monomials(sigma))
