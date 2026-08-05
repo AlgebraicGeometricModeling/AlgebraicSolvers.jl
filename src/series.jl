@@ -569,13 +569,18 @@ export localize
 """
 Construct the series such that the pseudo-moment of a monomial `m` is the same as the pseudo-moment of  the substitution `subs(m, sbs)`.
 """
-function subs_moment(sigma::Series, sbs )
+function subs_moment(sigma::Series, sbs... )
     
     Lm = monomial.(monomials(sigma))
     Lc = collect(coefficients(sigma))
+    dic =  typeof(sigma.terms)()
     for i in 1:length(Lm)
-        m = subs(Lm[i],sbs)
-        Lc[i] = get(sigma.terms, m, Lc[i])
+        m = subs(Lm[i],sbs...)
+        if haskey(dic, m)  
+            Lc[i] = dic[m]
+        else
+            dic[m] = Lc[i]
+        end
     end
     series(Lc,Lm)
     
