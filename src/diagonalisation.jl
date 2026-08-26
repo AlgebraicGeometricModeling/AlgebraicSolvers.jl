@@ -120,7 +120,7 @@ Compute the joint diagonalizaion of the matrices in `M`, from the computation of
 """
 function eigdiag(M)
 
-    M0 = sum(M[i]*rand() for i in 1:length(M))
+    M0 =  one(M[1]) + sum(M[i]*rand() for i in 1:length(M))
 
     E  = LinearAlgebra.eigvecs(M0)
 
@@ -187,10 +187,11 @@ It outputs
 
 """
 function schur_dcp(M::AbstractVector, eps::Float64=1.e-5)
-    lbd = randn(length(M))
-    lbd /= LinearAlgebra.norm(lbd)
 
-    M0 = sum(M[i]*lbd[i] for i in 1:length(M))
+    #lbd = rand(length(M))
+    #lbd /= LinearAlgebra.norm(lbd)
+
+    M0 = one(M[1]) +sum(M[i]*randn() for i in 1:length(M))
     
     T, Z, v = schur(ComplexF64.(M0))
     #println("... eig   ", t, "(s)"); t0=time()

@@ -1,25 +1,33 @@
 using DynamicPolynomials, AlgebraicSolvers, LinearAlgebra
 
-function solver_dense(d,X)
+function generic_dense(n, d)
 
-    n = length(X)
+    println("n=$n d=$d")
+    X = (@polyvar x[1:n])[1]
 
-    M = monomials(X,0:d)
-    s = length(M)
+    L = monomials(X,0:d)
+    s = length(L)
 
-    P = (2*rand(n,s)-fill(1.0,n,s))*M
-    t0 =time()
-    Xi = solve(Macaulay(), P)
-    t1= time()-t0
-    println("-- Number of solutions: ", size(Xi,2),"    ",t1,"(s)" )
+    P = randn(n,s)*L
+end
+
+
+function solver_dense(n, d; verbose = true )
+
+    println("n=$n d=$d")
+    X = (@polyvar x[1:n])[1]
+
+    L = monomials(X,0:d)
+    s = length(L)
+
+    P = randn(n,s)*L
+
+    @time Xi, ms = solve(P,Macaulay(); verbose=true)
+    verbose && println("-- Number of solutions: ", size(Xi,2),"    ",t1,"(s)" )
     Er = rel_error(P,Xi)
     println("-- Rel error: ", norm(Er,Inf))
     println()
-    t1
-end
-
-function init(X)
-    solver_dense(2,[X[1],X[2]])
+    return t1
 end
 
 function save(file::String, n, dg, t)

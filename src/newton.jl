@@ -23,7 +23,7 @@ function jacobian(P,X)
     [differentiate(P[i],X[j]) for i in 1:length(P), j in 1:length(X)]
 end
 
-function newton_iter(F, J, Xi)
+function newton_iter(F, J, Xi; verbose = false)
     J0 = fill(zero(Xi[1]), size(J,1), size(J,2))
     for i in 1:size(J,1)
         for j in 1:size(J,2)
@@ -57,8 +57,14 @@ Improve the roots `Xi` of the system `P` by Newton iteration.
  - `Nit` is the maximal number of iterations per root.
 
 """
-function newton_improve!(Xi::Matrix, P, X=variables(P),  eps::Float64=1.e-12, Nit::Int64 = 20)
+function newton_improve!(Xi::Matrix, P, X=variables(P), eps::Float64=1.e-12, Nit::Int64 = 25;verbose = false)
     J = jacobian(P,X)
+    if verbose
+        L0err = [norm([p(Xi[:,i]) for p in P]) for i in 1:size(Xi,2)]
+        err0 = max(L0err...)
+        println("\033[96m-- Initial residual err:\033[0m $err0")
+    end
+    Lerr = Float64[]
     for j in 1:size(Xi,2)
         i = 1
         err = 1.0
@@ -67,11 +73,14 @@ function newton_improve!(Xi::Matrix, P, X=variables(P),  eps::Float64=1.e-12, Ni
             V, err = newton_iter(P, J, V)
             i+=1
         end
-        if i==Nit && err>eps
-            println("err: ", err, "   ", V,  " nwt: no convergence ",)
+        if verbose && i==Nit && err>eps
+            println("\033[93m nwt: stop iteration for root$j err: $err  \033[0m",)
         end
         Xi[:,j] = V
+        push!(Lerr,err)
     end
+    mxerr= max(Lerr...)
+    verbose && println("\033[96m-- Max residual err: \033[0m $(max(Lerr...))")
     Xi
 end
 

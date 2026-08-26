@@ -38,17 +38,27 @@ The list `L` is the list of monomials indexing the colmuns of `N`.
 
 """
 function tnf(P::AbstractVector, Mth; verbose = false)
-    t0 = time()
-    R, L = res_matrix(P, Mth)
-    verbose && println("\033[96m-- Resultant matrix ", size(R,1),"x",size(R,2),  "   \033[0m",time()-t0, "(s)"); t0 = time()
-    
-    N = LinearAlgebra.nullspace(R)
-    F = qr(N')
-    verbose && println("\033[96m-- TNF ", size(F.R,1),"x",size(F.R,2), "   \033[0m",time()-t0, "(s)"); t0 = time()
 
-    Ib = column_basis(F.R)
+    t = @elapsed R, L = res_matrix(P, Mth)
+    verbose && println("\033[96m-- Resultant matrix ", size(R,2),"x",size(R,1),  "   \033[0m",t, "(s)"); 
+
+    rho = maxdegree(L)
     
-    return F.R, L, Ib
+    t = @elapsed N = LinearAlgebra.nullspace(R,tol=1.e-4)'
+    verbose && println("\033[96m-- Cokernel ", size(N,1),"x",size(N,2), "   \033[0m $t(s)"); t0 = time()
+
+    I0 = filter(i->maxdegree(L[i])<rho,1:length(L))
+    N0 = N[:,I0]
+    
+    t = @elapsed F = qr(N0,Val(true))
+    verbose && println("\033[96m-- QR fact.  \033[0m $t(s)");
+
+    Jb= F.p[1:size(N0,1)]
+    Ib = I0[Jb]
+    
+    #verbose && println("\033[96m-- Column basis\033[0m $(Ib)")
+    
+    return N, L, Ib
 end
 
 function tnf(P::AbstractVector, mth::Symbol)
