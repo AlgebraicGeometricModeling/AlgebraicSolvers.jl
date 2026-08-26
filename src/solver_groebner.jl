@@ -210,13 +210,13 @@ function mult_matrix(p, G::AbstractVector, Idx::Dict, Mth::GbSolver)
 end
 
 
-"""
+#==
 ```
 M = _mult_matrix(p, G::AbstractVector, B::AbstractVector)
 ```
 Compute the matrix of multication by `p` modulo `G` in the basis `B`. It is assumed that `G` is a Groebner basis and that the quotient is finite dimensional.
 
-"""
+==#
 function _mult_matrix(p, G::AbstractVector, B, Mth::GbSolver)
     Idx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:length(B)]...)
     return mult_matrix(p, G, Idx, Mth)
@@ -287,8 +287,10 @@ function _mult_matrices(P::AbstractVector, X, Mth::GbSolver)
     M = mult_matrices(X, N, B, II, Mth)
 end
 =#
-"""
 
+
+
+#==
 ```
 Xi, ms, G, B = solve(P::AbstractVector, Mth::GbSolver; verbose = false)
 ```
@@ -330,7 +332,7 @@ Xi, ms, G, B = AlgebraicSolvers.solve(P, GB)
 
 ```
 
-"""
+==#
 function _solve(P::Vector{DynamicPolynomials.Polynomial{T,O,C}}, Mth::GbSolver; verbose=false) where {T,O,C}
     _solve_grobner_DP(P, Mth; verbose=verbose)
 end

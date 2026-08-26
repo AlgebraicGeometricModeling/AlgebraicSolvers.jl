@@ -12,18 +12,36 @@ Structure for the construction of Macaulay resultant solvers. It stores
   -  `is_homogeneous :: Function P->` boolean testing if the system is homogeneous or not (default: `P -> !any(AlgebraicSolvers.is_not_homogeneous, P)`)
 
 The default value for ρ is ∑ deg(pi) - n + 1.
+
+
+This specifies
+ - the resultant matrix construction associated to Macaulay construction `res_matrix(P,Macaulay())`
+ - the TNF which is the transpose of the kernel of the resultant matrix `tnf(P,Macaulay())`
+ - the solver which is use Macaulay TNF to solve the system  `solve(P,Macaulay())`
+
+
 """
 struct Macaulay
     degree :: Function 
     is_homogeneous :: Function 
 end
 
+"""
+     Macaulay()
 
+The degree function is `P ->  sum(DynamicPolynomials.maxdegree(P[i])-1 for i in 1:length(P)) + 1`
+ 
+"""
 function Macaulay()
     Macaulay(P ->  sum(DP.maxdegree(P[i])-1 for i in 1:length(P)) + 1,
              P -> !any(is_not_homogeneous, P))
 end
 
+"""
+     Macaulay(rho::Int64)
+
+The degree function is `P -> rho` 
+"""
 function Macaulay(rho::Int64)
     Macaulay(P -> rho,
              P -> !any(is_not_homogeneous, P))
@@ -70,7 +88,9 @@ function res_matrix(P, Mth::Macaulay)
     sparse_matrix(M,idx(L)), L
 end
 
-function res_matrix(P::AbstractVector, ::Val{:macaulay}) res_matrix(P, Macaulay()) end
+function res_matrix(P::AbstractVector, ::Val{:macaulay})
+    res_matrix(P, Macaulay())
+end
 
 function qr_basis(N, L, ish = false)
     Idx= idx(L)

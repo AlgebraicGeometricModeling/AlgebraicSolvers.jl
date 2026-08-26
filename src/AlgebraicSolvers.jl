@@ -22,9 +22,9 @@ module AlgebraicSolvers
   include("decompose.jl")
 
   include("solve.jl")
-  include("solve_macaulay.jl")
-  include("solve_toric.jl")
-  include("solve_groebner.jl")
+  include("solver_macaulay.jl")
+  include("solver_toric.jl")
+  include("solver_groebner.jl")
   include("res_ce.jl")
 
 end

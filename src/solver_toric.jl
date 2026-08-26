@@ -8,7 +8,13 @@ export Toric
 
 """
 Structure for the construction of Toric resultant solvers. It store
-  - `supports :: Function  P->` supports of the polynomials `P` (default: `P->AlgebraicSolvers.support.(P)` )  
+  - `supports :: Function  P->` supports of the polynomials `P` (default: `P->AlgebraicSolvers.support.(P)` )
+
+This specifies
+ - the resultant matrix  associated to the Toric construction `res_matrix(P, Toric())`
+ - the TNF which is the transpose of the kernel of the resultant matrix `tnf(P,Toric())`
+ - the solver which is using the Toric TNF to solve the system  `solve(P,Toric())`
+
 """
 struct Toric
    supports::Function
@@ -55,12 +61,6 @@ function res_matrix(P::AbstractVector, Mth::Toric)
     R = sparse_matrix(M,idx(L))
     R, L
 end
-
-
-
-
-
-
 
 
 function res_matrix(P::AbstractVector, ::Val{:toric})  res_matrix(P, Toric()) end
