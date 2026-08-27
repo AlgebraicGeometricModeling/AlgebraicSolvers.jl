@@ -1,12 +1,7 @@
 using AlgebraicSolvers, DynamicPolynomials, Groebner, LinearAlgebra
 
 
-GB=Grobner(
-    Groebner.DegRevLex,
-    Groebner.groebner,
-    Groebner.normalform,
-    Groebner.quotient_basis
-)
+GB = GbSolver()
 
 X = @polyvar x y z
 
@@ -17,4 +12,4 @@ P = [
     7*x^2*y^4+18*x*y^3*z^2+y^3*z^3
 ]
 
-Xi, ms, G, B =  AlgebraicSolvers.solve(P, GB);
+Xi, ms =  AlgebraicSolvers.solve(P, GB; verbose=true);

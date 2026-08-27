@@ -9,60 +9,6 @@ function buildpolvar(::Type{PV}, arg, var) where PV
     :($(esc(arg)) = $var)
 end
 
-#=
-"""
-```
-@ring args...
-```
-Defines the arguments as variables and output their array.
-
-Example
--------
-```
-X = @ring x1 x2
-```
-"""
-macro ring(args...)
-    X = DynamicPolynomials.PolyVar{true}[DynamicPolynomials.PolyVar{true}(string(arg)) for arg in args]
-    V = [buildpolvar(PolyVar{true}, args[i], X[i]) for i in 1:length(X)]
-    push!(V, :(TMP = $X) )
-    Base.reduce((x,y) -> :($x; $y), V; init = :() )
-end
-=#
-
-#----------------------------------------------------------------------
-#=
-"""
-```
-deg(p:Polynomial) -> Int64
-```
-Degree of a polynomial
-"""
-function deg(p::DynamicPolynomials.Polynomial{B,T}) where {B,T}
-    maxdegree(p.x)
-end
-
-#----------------------------------------------------------------------
-function deg(t::Term{B,T})  where {B,T}
-    deg(t.x)
-end
-#----------------------------------------------------------------------
-function deg(m::Monomial{C}) where C
-    sum(m.z)
-end
-#----------------------------------------------------------------------
-function deg(v::DynamicPolynomials.PolyVar{T}) where T
-    1
-end
-#----------------------------------------------------------------------
-function MultivariatePolynomials.variables(m::Monomial{C}) where C
-    m.vars
-end
-#----------------------------------------------------------------------
-function coeff(t::Term{B,T}) where {B,T}
-    exponent(t.α)
-end
-=#
 #----------------------------------------------------------------------
 function Base.one(::Type{DynamicPolynomials.Monomial{true}})
     Monomial{true}()
@@ -158,6 +104,7 @@ end
 
 """
     prodvec(X,Y)
+
 Product-wise vector of X by Y ordered by row: [x1*y1, x1*y2, ..., x2*y1, ....] 
 """
 function prodvec(X, Y)
@@ -202,6 +149,21 @@ function cst(c::Number)
 end
 
 function cst(p::AbstractPolynomial)
-    coefficient(p, one(monomials(p)[1]))
+    if p==0 return 0
+    else
+       return coefficient(p, one(monomials(p)[1]))
+    end
 end
 export cst
+
+#----------------------------------------------------------------------
+function random_dense(n, d, RND = randn )
+
+    X = (@polyvar x[1:n])[1]
+
+    L = monomials(X,0:d)
+    s = length(L)
+
+    P = RND(n,s)*L
+end
+export random_dense

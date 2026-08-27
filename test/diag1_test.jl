@@ -16,7 +16,7 @@ M = mult_matrices(P,variables(P), Mc)
 
 Xi, E, Info = diagonalization(M)
 
-Er = rel_error(P,Xi,X)
+Er = rel_error(P,Xi)
 println("-- Rel error: ", norm(Er,Inf));
 
 

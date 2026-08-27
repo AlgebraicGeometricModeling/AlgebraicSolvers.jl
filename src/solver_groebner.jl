@@ -1,8 +1,7 @@
 #AA = AbstractAlgebra
 import AbstractAlgebra: gens, exponent_vectors
 
-export mult_matrices, solve_groebner, reduce_by,   
-    prolong, border, tnf
+export mult_matrices, solve_groebner, reduce_by, prolong, border, tnf
 
 
 """
@@ -12,6 +11,39 @@ Structure which defines
   - `reduce :: Function (p, G) -> ` normal form of the polynomial `p` modulo G 
   - `quot_basis :: Function P -> ` basis of the quotient by the ideal(`P`)
 
+It can be used as an argument of [`solve`](@ref), [`tnf`](@ref), [`quot_basis`](@ref).
+
+## Constructors:
+```
+    GB = GbSolver(gbasis, normform, qbasis)
+```
+Construct a structure of type `GbSolver` where
+
+ - `gbasis` is the function which computes the GbSolver basis
+ - `normform` is the function to reduce modulo a GbSolver basis
+ - `qbasis` is the function which provides a basis of the quotient algebra.
+
+```
+    GB = GbSolver()
+```
+Construct a GbSolver. If a Groebner engine is available, from a package such as `Groebner`, it uses it otherwise it returns `nothing`.
+
+
+## Example:
+```
+using AlgebraicSolvers, DynamicPolynomials, Groebner
+
+GB = GbSolver(
+        P->Groebner.groebner(P, ordering = Groebner.DegRevLex(variables(P))),
+        Groebner.normalform,
+        Groebner.quotient_basis
+    )
+
+X = @polyvar x y
+P = [x-y+x^2,x-y+y^2]
+Xi, ms = solve(P, GB)
+
+```
 """
 mutable struct GbSolver
     grobner_basis ::Function
@@ -22,52 +54,11 @@ end
 
 export GbSolver
 
-"""
-    GB = GbSolver(gbasis, normform, qbasis)
 
-Construct a structure of type `GbSolver` where
-
- - `gbasis` is the function which computes the GbSolver basis
- - `normform` is the function to reduce modulo a GbSolver basis
- - `qbasis` is the function which provides a basis of the quotient algebra.
-
-## Example:
-```
-using AlgebraicSolvers, Groebner
-
-GB = GbSolver(
-        P->Groebner.groebner(P, ordering = Groebner.DegRevLex(variables(P))),
-        Groebner.normalform,
-        Groebner.quotient_basis
-    )
-```
-
-It can be used as an argument of [`solve`](@ref), [`tnf`](@ref), 
-"""
 function GbSolver(gbasis, normform, qbasis)
     GbSolver(gbasis, normform, qbasis,true)
 end
 
-"""
-    GB = GbSolver()
-
-Construct a GbSolver. If a Groebner engine is available, from a package such as `Groebner`, it uses it otherwise it returns `nothing`.
-
-```
-using AlgebraicSolvers, DynamicPolynomials, Groebner
-
-GB = GbSolver()
-
-```
-This returns
-```
-GbSolver(
-        P->Groebner.groebner(P, ordering = Groebner.DegRevLex(variables(P))),
-        Groebner.normalform,
-        Groebner.quotient_basis
-    ) 
-```
-"""
 function GbSolver()
      if isdefined(Main,:Groebner)
          return GbSolver(P -> Main.Groebner.groebner(P, ordering = Main.Groebner.DegRevLex(variables(P))),
@@ -80,6 +71,8 @@ function GbSolver()
     end
 
 end
+
+
 
 function check_gb(Mth::GbSolver)
  if isdefined(Main,:Groebner)
@@ -139,48 +132,6 @@ function _reduced_by(p,G)
     r
 end
 =#
-
-function tnf_gb(G::AbstractVector, B, Mth::GbSolver; verbose = false)
-  
-    r = length(B)
-    Mnx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:r]...)
-
-    dB = border(B, union(DynamicPolynomials.variables.(G)...))
-
-    for i in 1:length(dB)  Mnx[dB[i]]=r+i  end
-
-    N = fill(0.0, r, r+length(dB))
-
-    for i in 1:r  N[i,i] = 1.0 end
-    
-    L  = [DynamicPolynomials.leading_monomial(g) for g in G]
-
-    for g in G
-        lm = DP.leading_monomial(g)
-        mns = DP.monomials(g)
-        cfs = DP.coefficients(g)
-        i = Mnx[lm] 
-        for k in 1:length(mns)-1
-            if Mnx[mns[k]] >r
-                println(">> ", lm, " ", mns[k], "   ",g)
-            end
-            
-            if mns[k] != lm
-                N[Mnx[mns[k]],i] = -cfs[k]
-            end
-        end
-    end
-        
-    for i in 1:length(dB)
-        alpha = dB[i]
-        ir = last_divisible_by(alpha,L)
-        mns = B*div(alpha,L[ir])
-        cfs = N[:,Mnx[L[ir]]]
-        N[:,r+i] = sum(cfs[j]*N[:,Mnx[mns[j]]] for j in 1:length(cfs))
-        push!(L,alpha)
-    end
-    N, Mnx
-end
 
 export mult_matrix
 """
@@ -277,6 +228,50 @@ function tnf(P::AbstractVector, Mth::GbSolver; verbose = false)
     return N, L, [II[b] for b in B]
 end
 
+function tnf_gb(G::AbstractVector, B, Mth::GbSolver; verbose = false)
+  
+    r = length(B)
+    Mnx = Dict{typeof(B[1]),Int64}([B[i] => i for i in 1:r]...)
+
+    dB = border(B, union(DynamicPolynomials.variables.(G)...))
+
+    for i in 1:length(dB)  Mnx[dB[i]]=r+i  end
+
+    N = fill(0.0, r, r+length(dB))
+
+    for i in 1:r  N[i,i] = 1.0 end
+    
+    L  = [DynamicPolynomials.leading_monomial(g) for g in G]
+
+    for l in 1:length(G)
+        g= G[l]
+        lm = L[l]
+        mns = DP.monomials(g)
+        cfs = DP.coefficients(g)
+        i = Mnx[lm] 
+        for k in 1:length(mns)-1
+            if Mnx[mns[k]] > r
+                println(">> ", lm, " ", mns[k], "   ",g)
+            end
+            
+            if mns[k] != lm
+                N[Mnx[mns[k]],i] = -cfs[k]
+            end
+        end
+    end
+        
+    for i in 1:length(dB)
+        alpha = dB[i]
+        ir = last_divisible_by(alpha,L)
+        mns = B*div(alpha,L[ir])
+        cfs = N[:,Mnx[L[ir]]]
+        N[:,r+i] = sum(cfs[j]*N[:,Mnx[mns[j]]] for j in 1:length(cfs))
+        push!(L,alpha)
+    end
+    N, Mnx
+end
+
+
 #=
 function _mult_matrices(P::AbstractVector, X, Mth::GbSolver)
     X = DynamicPolynomials.variables(P)
@@ -289,50 +284,6 @@ end
 =#
 
 
-
-#==
-```
-Xi, ms, G, B = solve(P::AbstractVector, Mth::GbSolver; verbose = false)
-```
-Solve the system of polynomials `P`. It outputs:
-
- -  `Xi` the complex solution points, one per column of `Xi`
- -  `ms` the vector of their multiplicities
- -  `G` the computed GbSolver basis
- -  `B` the basis of the quotient by the ideal of the equations
-
-If `verbose = true`, the timing of the different steps is printed.
-
-Example:
-========
-```
-using AlgebraicSolvers, DynamicPolynomials, Groebner
-
-GB=GbSolver(
-    Groebner.DegRevLex,
-    Groebner.groebner,
-    Groebner.normalform,
-    Groebner.quotient_basis
-)
-
-X = @polyvar x y 
-
-P = [-2+y-y^2+x^2*y, 1-3x+y+x*y^2]
-
-Xi, ms, G, B = AlgebraicSolvers.solve(P, GB; verbose = true)
-
-
-using AbstractAlgebra
-
-R ,(x,y) =  polynomial_ring(AbstractAlgebra.QQ, [:x,:y])
-
-P = [x^2*y-y^2, x*y^2-3]
-
-Xi, ms, G, B = AlgebraicSolvers.solve(P, GB)
-
-```
-
-==#
 function _solve(P::Vector{DynamicPolynomials.Polynomial{T,O,C}}, Mth::GbSolver; verbose=false) where {T,O,C}
     _solve_grobner_DP(P, Mth; verbose=verbose)
 end

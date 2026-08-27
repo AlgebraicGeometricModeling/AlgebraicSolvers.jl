@@ -13,10 +13,8 @@ N, L = tnf(P,Mc)
 B = quot_basis(P,Mc)
 M = mult_matrices(P,variables(P), Mc)
 
-Xi, ms = AlgebraicSolvers.solve(P, :macaulay; verbose=true)
+Xi, ms = AlgebraicSolvers.solve(P, Mc; verbose=true)
 
-Er = rel_error(P,Xi,X)
-println("-- Rel error: ", norm(Er,Inf));
 println("-- Mult sols: ", ms);
 
 

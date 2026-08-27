@@ -270,25 +270,3 @@ function res_matrix(P::AbstractVector, M::AbstractVector)
     sparse_matrix(RM, idx(L)), L
 end
 
-"""
-Vector of relative errors of P at the points X
-"""
-function rel_error(P, Xi::Matrix, X = DP.variables(P))
-    r = fill(0.0, length(P), size(Xi,2))
-    n = size(Xi,2)
-
-    for i in 1: size(Xi,2)
-        for j in 1:length(P)
-            V = Xi[:,i]
-            r[j,i]= norm(DP.coefficients(DP.subs(P[j],X=>V)))
-            r[j,i]/=norm(DP.coefficients(P[j]))
-        end
-    end
-    r
-end
-
-
-function rel_error(P::Vector{AbstractAlgebra.Generic.MPoly{C}}, Xi::Matrix) where {C}
-    P1 = as_polynomial_DP(P)
-    return rel_error(P1, Xi)
-end

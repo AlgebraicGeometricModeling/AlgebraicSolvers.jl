@@ -11,6 +11,5 @@ B = quot_basis(P, Tr)
 M = mult_matrices(P,X,Tr)
 
 Xi, ms = AlgebraicSolvers.solve(P, Tr; verbose=true)
-Er = rel_error(P,Xi)
-println("-- Rel error: ", norm(Er,Inf));
+
 println("-- Mult sols: ", ms);

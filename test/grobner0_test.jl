@@ -1,12 +1,11 @@
 using AlgebraicSolvers, DynamicPolynomials, Groebner, LinearAlgebra
 
 
-GB=Grobner(
-    Groebner.DegRevLex,
-    Groebner.groebner,
-    Groebner.normalform,
-    Groebner.quotient_basis
-)
+GB = GbSolver(
+          P->Groebner.groebner(P, ordering = Groebner.DegRevLex(variables(P))),
+          Groebner.normalform,
+          Groebner.quotient_basis
+ )
 
 X = @polyvar x y
 
@@ -17,10 +16,8 @@ B0 = quot_basis(P, GB)
 N, L = tnf(P, GB)
 M = mult_matrices(P,variables(P), GB)
 
-Xi, ms, G, B  = AlgebraicSolvers.solve(P, GB; verbose=true)
+Xi, ms  = AlgebraicSolvers.solve(P, GB; verbose=true)
 
-Er = rel_error(P,Xi)
-println("-- Rel error: ", norm(Er,Inf));
 println("-- Mult sols: ", ms);
 
  

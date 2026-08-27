@@ -23,10 +23,6 @@ M = mult_matrices(P, variables(P), Mth)
 #ms = multiplicities(v)
 
 Xi, ms  = AlgebraicSolvers.solve(P, Macaulay();verbose=true)
-Er = rel_error(P, Xi, X)
-println("-- Rel error: ", norm(Er,Inf));
+
 println("-- Sol mult: ", ms);
 
-newton_improve!(Xi,P)
-Er = rel_error(P,Xi,X)
-println("-- Rel error: ", norm(Er,Inf));

@@ -14,9 +14,9 @@ P = (2*rand(n,s)-fill(1.0,n,s))*M
 Xi, ms = AlgebraicSolvers.solve(P,Macaulay())
 println("-- Mult sols: ", ms);
 #println("-- sol ", Xi)
-Er = rel_error(P,Xi,X)
+Er = rel_error(P,Xi)
 println("-- Rel error: ", norm(Er,Inf));
 
 newton_improve!(Xi,P)
-Er = rel_error(P,Xi,X)
+Er = rel_error(P,Xi)
 println("-- Rel error: ", norm(Er,Inf));

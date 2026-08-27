@@ -16,11 +16,11 @@ function quot_basis(P, Mth)
 
     R, L = res_matrix(P, Mth)
 
-    N = nullspace(R)
+    N = nullspace(R)'
     
-    F = qr(N')
+    F = qr(N)
     
-    return L[column_basis(F.R)]
+    return L[column_basis(N)]
 end
 
 function quot_basis(P::AbstractVector, mth::Symbol)
@@ -28,13 +28,18 @@ function quot_basis(P::AbstractVector, mth::Symbol)
 end
 
 
+function filter_basis(N::AbstractMatrix, L::AbstractVector, Mth)
+    rho = maxdegree(L)
+    I0 = filter(i->maxdegree(L[i])<rho,1:length(L))
+end
 
 """
-    N, L, B = tnf(P, Mth)
+    N, L, Ib = tnf(P, Mth)
 
 Compute the Truncated Normal Form `N` of `P=[p1, ..., pn]`, using `res_matrix(P,Mth)`.
 
 The list `L` is the list of monomials indexing the colmuns of `N`.
+`Ib`is the list of indices of the computed basis.
 
 """
 function tnf(P::AbstractVector, Mth; verbose = false)
@@ -42,12 +47,11 @@ function tnf(P::AbstractVector, Mth; verbose = false)
     t = @elapsed R, L = res_matrix(P, Mth)
     verbose && println("\033[96m-- Resultant matrix ", size(R,2),"x",size(R,1),  "   \033[0m",t, "(s)"); 
 
-    rho = maxdegree(L)
-    
-    t = @elapsed N = LinearAlgebra.nullspace(R,tol=1.e-4)'
+   
+    t = @elapsed N = LinearAlgebra.nullspace(R,tol=5.e-4)'
     verbose && println("\033[96m-- Cokernel ", size(N,1),"x",size(N,2), "   \033[0m $t(s)"); t0 = time()
 
-    I0 = filter(i->maxdegree(L[i])<rho,1:length(L))
+    I0 = filter_basis(N, L, Mth)
     N0 = N[:,I0]
     
     t = @elapsed F = qr(N0,Val(true))
@@ -55,8 +59,6 @@ function tnf(P::AbstractVector, Mth; verbose = false)
 
     Jb= F.p[1:size(N0,1)]
     Ib = I0[Jb]
-    
-    #verbose && println("\033[96m-- Column basis\033[0m $(Ib)")
     
     return N, L, Ib
 end

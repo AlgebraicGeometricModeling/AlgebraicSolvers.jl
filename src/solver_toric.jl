@@ -62,8 +62,7 @@ function res_matrix(P::AbstractVector, Mth::Toric)
     R, L
 end
 
+function filter_basis(N::AbstractMatrix, L::AbstractVector, Mth::Toric)
+    column_basis(N)
+end
 
-function res_matrix(P::AbstractVector, ::Val{:toric})  res_matrix(P, Toric()) end
-function tnf(P::AbstractVector, ::Val{:toric})  tnf(P, Toric()) end
-function quot_basis(P::AbstractVector, ::Val{:toric})  quot_basis(P, Toric()) end
-function solve(P::AbstractVector, ::Val{:toric}; verbose::Bool = false )  solve(P, Toric(); verbose=verbose) end

@@ -25,21 +25,14 @@ Example
 -------
 ```
 using AlgebraicSolvers, DynamicPolynomials
-
 X = @polyvar x y
 P = [2-x*y+x^2,y^2+x-2]
 Xi, ms = solve(P, Macaulay())
 
-using AlgebraicSolvers, DynamicPolynomials, Groebner
-
-X = @polyvar x y
-P = [x-y+x^2,x-y+y^2]
-Xi, ms = solve(P, GbSolver())
-
 ```
 """
 function solve(P::AbstractArray, Mth;
-               diag::Symbol = :schur,  verbose::Bool = false, refine::Bool = true)
+               verbose::Bool = false, diag::Symbol = :schur,  refine::Bool = true)
     X = variables(P)
 
     N, L, IB = tnf(P, Mth; verbose=verbose)
@@ -69,11 +62,13 @@ function solve(P::AbstractArray, Mth;
         ms = fill(1,size(Xi,2))
     end
 
-    if refine
+    if refine && max(ms...)==1
         t = @elapsed newton_improve!(Xi,P; verbose = verbose)
         verbose && println("\033[96m-- Newton improve   \033[0m",t, "(s)"); 
     end
-    
+
+    verbose && println("\033[96m-- Number of solutions:\033[0m ", size(Xi,2))
+    verbose && println("\033[96m-- Rel error:\033[0m ", norm(rel_error(P,Xi),Inf))
     return Xi, ms
 end
 
@@ -84,4 +79,12 @@ end
 function solve(P::AbstractArray, Mth::Nothing; diag::Symbol = :schur,  verbose::Bool = false)
     @error "Unable to solve the system"
     return nothing, nothing
+end
+
+
+function solve(P::Vector{AbstractAlgebra.Generic.MPoly{C}}, Mth;
+               verbose::Bool = false, diag::Symbol = :schur,  refine::Bool = true) where {C}
+
+    P1 = convert_DP(P)
+    solve(P1,Mth;verbose=verbose,diag=diag,refine=refine)
 end

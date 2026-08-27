@@ -19,29 +19,47 @@ This specifies
  - the TNF which is the transpose of the kernel of the resultant matrix `tnf(P,Macaulay())`
  - the solver which is use Macaulay TNF to solve the system  `solve(P,Macaulay())`
 
+It can be used as an argument of [`solve`](@ref), [`tnf`](@ref), [`quot_basis`](@ref).
 
+## Constructors
+```
+     Macaulay()
+```
+The degree function is `P ->  sum(DynamicPolynomials.maxdegree(P[i])-1 for i in 1:length(P)) + 1`
+
+```
+     Macaulay(rho::Int64)
+```
+The degree function is `P -> rho` 
+
+
+## Example
+
+```
+using AlgebraicSolvers, DynamicPolynomials
+X = @polyvar x y
+P = [2-x*y-x^2, y^2+x-2, x^2-y^2+x-1]
+Xi, ms = solve(P, Macaulay(3))
+```
+This gives the unique solution `Xi`:
+
+```
+2×1 Matrix{ComplexF64}:
+ 1.0 + 0.0im
+ 1.0 + 0.0im
+```
 """
 struct Macaulay
     degree :: Function 
     is_homogeneous :: Function 
 end
 
-"""
-     Macaulay()
-
-The degree function is `P ->  sum(DynamicPolynomials.maxdegree(P[i])-1 for i in 1:length(P)) + 1`
- 
-"""
 function Macaulay()
     Macaulay(P ->  sum(DP.maxdegree(P[i])-1 for i in 1:length(P)) + 1,
              P -> !any(is_not_homogeneous, P))
 end
 
-"""
-     Macaulay(rho::Int64)
 
-The degree function is `P -> rho` 
-"""
 function Macaulay(rho::Int64)
     Macaulay(P -> rho,
              P -> !any(is_not_homogeneous, P))
@@ -60,7 +78,6 @@ where `P` the polynomial system.
 
 It outputs 
  - `R` the transpose of Sylvester matrix of all monomial multiples mi*pi in degree  ≤ ρ.
-
  - `L` array of monomials indexing the columns of `R`
 
 The matrix `R` has a sparse representation.

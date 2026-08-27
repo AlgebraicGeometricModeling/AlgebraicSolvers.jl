@@ -12,22 +12,14 @@ P=[ x0^2 + 2*x1^2 + 2*x2^2 + 2*x3^2 + 2*x4^2 - x0,
 R, L = res_matrix(P,Mc)
 N, L = tnf(P,Mc)
 
-B = quot_basis(P, :macaulay)
-
-N, _ = LinearAlgebra.nullspace(R)
-
-F = qr!(N')
-U = F.R 
-IB = column_basis(U)
+B = quot_basis(P, Mc)
 
 M = mult_matrices(P,variables(P),Mc)
+
 Xi = eigdiag(M)
 
 Xi, ms = AlgebraicSolvers.solve(P, Mc; verbose=true)
 
 
-Er = rel_error(P, Xi)
-println("-- Rel error: ", norm(Er,Inf));
 println("-- Mult sols: ", ms);
 
-#println("-- Sol: ", Xi)

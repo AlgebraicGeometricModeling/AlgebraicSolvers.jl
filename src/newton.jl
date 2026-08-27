@@ -23,19 +23,19 @@ function jacobian(P,X)
     [differentiate(P[i],X[j]) for i in 1:length(P), j in 1:length(X)]
 end
 
-function newton_iter(F, J, Xi; verbose = false)
+function newton_iter(F, J, X, Xi; verbose = false)
     J0 = fill(zero(Xi[1]), size(J,1), size(J,2))
     for i in 1:size(J,1)
         for j in 1:size(J,2)
             if J[i,j] != zero(J[i,j])
-                J0[i,j] = J[i,j](Xi)
+                J0[i,j] = subs(J[i,j], X=>Xi)
             end
         end
     end
     F0 = fill(zero(Xi[1]), length(F))
     for i in 1:length(F)
         if F[i] != zero(F[i])
-                F0[i] = F[i](Xi)
+                F0[i] = cst(subs(F[i], X=>Xi))
         end
     end
     err = norm(F0)
@@ -57,12 +57,12 @@ Improve the roots `Xi` of the system `P` by Newton iteration.
  - `Nit` is the maximal number of iterations per root.
 
 """
-function newton_improve!(Xi::Matrix, P, X=variables(P), eps::Float64=1.e-12, Nit::Int64 = 25;verbose = false)
+function newton_improve!(Xi::Matrix, P, X=variables(P), eps::Float64=1.e-12, Nit::Int64 = 20;verbose = false)
     J = jacobian(P,X)
     if verbose
-        L0err = [norm([p(Xi[:,i]) for p in P]) for i in 1:size(Xi,2)]
+        L0err = [norm([cst(subs(p,X=>Xi[:,i])) for p in P]) for i in 1:size(Xi,2)]
         err0 = max(L0err...)
-        println("\033[96m-- Initial residual err:\033[0m $err0")
+        println("\033[96m-- Init. max residual\033[0m: $err0")
     end
     Lerr = Float64[]
     for j in 1:size(Xi,2)
@@ -70,7 +70,7 @@ function newton_improve!(Xi::Matrix, P, X=variables(P), eps::Float64=1.e-12, Nit
         err = 1.0
         V = Xi[:,j]
         while err>eps && i< Nit
-            V, err = newton_iter(P, J, V)
+            V, err = newton_iter(P, J, X, V)
             i+=1
         end
         if verbose && i==Nit && err>eps
@@ -80,7 +80,7 @@ function newton_improve!(Xi::Matrix, P, X=variables(P), eps::Float64=1.e-12, Nit
         push!(Lerr,err)
     end
     mxerr= max(Lerr...)
-    verbose && println("\033[96m-- Max residual err: \033[0m $(max(Lerr...))")
+    verbose && println("\033[96m-- Final max residual:\033[0m $(max(Lerr...))")
     Xi
 end
 
@@ -121,4 +121,51 @@ function alpha_beta(P::Vector, Xi::Vector)
     gamma = 0.5*d*sqrt(d)*mu
 
     beta*gamma, 2*beta
+end
+
+
+"""
+    rel_error(P, Xi::Matrix, X = variables(P))
+
+Vector of relative errors of P at the columns of the matrix `Xi`.
+"""
+function rel_error(P, Xi::Matrix)
+    X = DP.variables(P)
+    r = fill(0.0, length(P), size(Xi,2))
+    n = size(Xi,2)
+
+    for i in 1: size(Xi,2)
+        for j in 1:length(P)
+            V = Xi[:,i]
+            r[j,i]= norm(DP.coefficients(DP.subs(P[j],X=>V)))
+            r[j,i]/=norm(DP.coefficients(P[j]))
+        end
+    end
+    r
+end
+
+"""
+    rel_error(P, Xi::Vector, X = variables(P))
+
+Vector of relative errors of P at the points Xi (which is a vector of vectors)
+"""
+function rel_error(P, Xi::Vector, X = variables(P))
+    X = DP.variables(P)
+    r = fill(0.0, length(P), length(Xi))
+    n = length(Xi[1])
+
+    for i in 1: length(Xi)
+        for j in 1:length(P)
+            V = Xi[i]
+            r[j,i]= norm(DP.coefficients(DP.subs(P[j],X=>V)))
+            r[j,i]/=norm(DP.coefficients(P[j]))
+        end
+    end
+    r
+end
+
+
+function rel_error(P::Vector{AbstractAlgebra.Generic.MPoly{C}}, Xi::Matrix) where {C}
+    P1 = as_polynomial_DP(P)
+    return rel_error(P1, Xi)
 end
