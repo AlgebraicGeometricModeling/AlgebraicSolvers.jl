@@ -23,12 +23,12 @@ It can be used as an argument of [`solve`](@ref), [`tnf`](@ref), [`quot_basis`](
 
 ## Constructors
 ```
-     Macaulay()
+Macaulay()
 ```
 The degree function is `P ->  sum(DynamicPolynomials.maxdegree(P[i])-1 for i in 1:length(P)) + 1`
 
 ```
-     Macaulay(rho::Int64)
+Macaulay(rho::Int64)
 ```
 The degree function is `P -> rho` 
 
@@ -72,8 +72,9 @@ end
 
 
 """
-    R, L = res_matrix(P, Mth::Macaulay)
-
+```
+R, L = res_matrix(P, Mth::Macaulay)
+```
 where `P` the polynomial system.
 
 It outputs 
@@ -143,10 +144,6 @@ function qr_basis(N, L, ish = false)
     B, N*F.Q
 end
 
-
-function tnf(P::AbstractVector, ::Val{:macaulay}) tnf(P, Macaulay()) end
-function quot_basis(P::AbstractVector, ::Val{:macaulay}) quot_basis(P, Macaulay()) end
-function solve(P::AbstractVector, ::Val{:macaulay}; verbose::Bool = false ) solve(P, Macaulay(); verbose=verbose) end
 
 
 

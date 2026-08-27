@@ -15,7 +15,7 @@ It can be used as an argument of [`solve`](@ref), [`tnf`](@ref), [`quot_basis`](
 
 ## Constructors:
 ```
-    GB = GbSolver(gbasis, normform, qbasis)
+GB = GbSolver(gbasis, normform, qbasis)
 ```
 Construct a structure of type `GbSolver` where
 
@@ -24,7 +24,7 @@ Construct a structure of type `GbSolver` where
  - `qbasis` is the function which provides a basis of the quotient algebra.
 
 ```
-    GB = GbSolver()
+GB = GbSolver()
 ```
 Construct a GbSolver. If a Groebner engine is available, from a package such as `Groebner`, it uses it otherwise it returns `nothing`.
 
@@ -187,7 +187,7 @@ end
 export quot_basis
 """
 ```
-    B = quot_basis(P, Mth::GbSolver; verbose = false)
+B = quot_basis(P, Mth::GbSolver; verbose = false)
 ```
 Computes the basis `B` of the quotient by the ideal (P), formed by the monomials which are not in the inital of (P).
 """
@@ -201,7 +201,7 @@ end
 
 """
 ```
-    B = tnf(P, Mth::GbSolver; verbose = false)
+N, L, Ib = tnf(P, Mth::GbSolver; verbose = false)
 ```
 Computes the Truncated Normal Form on `B^+` where `B` is the basis of the quotient by the ideal (`P`), formed by the monomials which are not in the inital of (`P`).
 """

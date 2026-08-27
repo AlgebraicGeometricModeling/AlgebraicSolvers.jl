@@ -7,7 +7,7 @@ end
 
 """
 ```
-    B = quot_basis(P, Mth)
+B = quot_basis(P, Mth)
 ```
 Computes a basis of the quotient by the ideal P, using `res_matrix(P,Mth)`
 
@@ -18,28 +18,27 @@ function quot_basis(P, Mth)
 
     N = nullspace(R)'
     
-    F = qr(N)
+    #  F = qr(N)
     
     return L[column_basis(N)]
 end
 
-function quot_basis(P::AbstractVector, mth::Symbol)
-      quot_basis(P, Val(mth))  
-end
-
-
+#==
+Filter the monomials m in L such that m*X \subset L.
+==#
 function filter_basis(N::AbstractMatrix, L::AbstractVector, Mth)
     rho = maxdegree(L)
     I0 = filter(i->maxdegree(L[i])<rho,1:length(L))
 end
 
 """
-    N, L, Ib = tnf(P, Mth)
-
+```
+N, L, Ib = tnf(P, Mth)
+```
 Compute the Truncated Normal Form `N` of `P=[p1, ..., pn]`, using `res_matrix(P,Mth)`.
 
 The list `L` is the list of monomials indexing the colmuns of `N`.
-`Ib`is the list of indices of the computed basis.
+`Ib` is the list of indices of the computed basis.
 
 """
 function tnf(P::AbstractVector, Mth; verbose = false)
@@ -71,7 +70,7 @@ end
 export mult_matrices
 """
 ```
-    M = mult_matrices(P, DynamicPolynomials.variables(P), Mth)
+M = mult_matrices(P, DynamicPolynomials.variables(P), Mth)
 ```
 Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables in a basis `B` of the quotient by the ideal (`P`), using `tnf(P,Mth)`.
 
@@ -91,7 +90,7 @@ end
 
 """
 ```
-    M = mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X)
+M = mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X)
 ```
 Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables `X` in the basis `B = L[IB]` from the Truncated Normal Form `N`, assuming `N[IB,IB]=Id`.
 """
@@ -114,7 +113,7 @@ function mult_matrices(N::AbstractMatrix, L::AbstractVector, IB::Vector, X)
 end
 """
 ```
-    M = mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X, v0)
+M = mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X, v0)
 ```
 Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables `X/v0` in a basis `B = L[IB]` from the Truncated Normal Form `N`, assuming `N[IB,IB]=Id`.
 """
