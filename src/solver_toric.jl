@@ -70,7 +70,7 @@ end
 function filter_basis(N::AbstractMatrix, L::AbstractVector, Mth::Toric)
     X = variables(L)
     M = intersect(L, [support_diff(L,x) for x in X]...)
-    return [findfirst(m-> m==M[i],L) for i in 1:length(M)]
+    return [findfirst(m -> m==M[i],L) for i in 1:length(M)]
     
     #column_basis(N)
 end
