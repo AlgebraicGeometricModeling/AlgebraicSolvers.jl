@@ -74,7 +74,7 @@ function newton_improve!(Xi::Matrix, P, X=variables(P), eps::Float64=1.e-12, Nit
             i+=1
         end
         if verbose && i==Nit && err>eps
-            println("\033[93m nwt: stop iteration for root$j err: $err  \033[0m",)
+            println("\033[93m nwt: stop iteration for root$j res.: $err  \033[0m",)
         end
         Xi[:,j] = V
         push!(Lerr,err)

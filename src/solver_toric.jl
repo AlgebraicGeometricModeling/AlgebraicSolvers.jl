@@ -21,12 +21,17 @@ struct Toric
 end
 
 function support(p::DynamicPolynomials.Polynomial)
-    sum(monomials(p))
+    monomials(p)
 end
 
 function Toric()
     Toric(P->A = support.(P))
 end
+
+function support_diff(L, x)
+    monomials(differentiate(sum(L),x))
+end
+export support_diff
 
 """
 ```
@@ -43,7 +48,7 @@ It outputs
 """
 function res_matrix(P::AbstractVector, Mth::Toric)
     M = typeof(P[1])[]
-    A = Mth.supports(P)
+    A = sum.(Mth.supports(P))
     mult = one(A[1])
     for i in 1:length(P)
         mult = one(A[1])
@@ -63,6 +68,10 @@ function res_matrix(P::AbstractVector, Mth::Toric)
 end
 
 function filter_basis(N::AbstractMatrix, L::AbstractVector, Mth::Toric)
-    column_basis(N)
+    X = variables(L)
+    M = intersect(L, [support_diff(L,x) for x in X]...)
+    return [findfirst(m-> m==M[i],L) for i in 1:length(M)]
+    
+    #column_basis(N)
 end
 

@@ -148,11 +148,14 @@ function cst(c::Number)
     return c
 end
 
+#----------------------------------------------------------------------
 function cst(p::AbstractPolynomial)
-    if p==0 return 0
+    return coefficient(p,monomials(one(p))[1])
+    #= if p==0 return 0
     else
        return coefficient(p, one(monomials(p)[1]))
     end
+    =#
 end
 export cst
 
