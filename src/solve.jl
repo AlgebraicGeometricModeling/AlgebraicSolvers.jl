@@ -47,7 +47,12 @@ function solve(P::AbstractArray, Mth;
     end
     verbose && println("\033[96m-- Mult matrices \033[0m $t(s)"); 
 
-
+    if size(M[1],1) == 1
+        n = length(M)
+        Xi = reshape([m[1,1] for m in M], n,1)
+        return Xi, [1]
+    end
+    
     if diag == :schur
         t = @elapsed Xi, ms = schur_dcp(M)
         verbose && println("\033[96m-- Schur dec",  "   \033[0m",t, "(s)");

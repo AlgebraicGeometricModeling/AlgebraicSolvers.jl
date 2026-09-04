@@ -94,22 +94,26 @@ M = mult_matrices(N::Matrix, L::AbstractVector, IB::Vector, X)
 ```
 Computes the vector of multiplication matrices `M=[M1, M2, ...]` by the variables `X` in the basis `B = L[IB]` from the Truncated Normal Form `N`, assuming `N[IB,IB]=Id`.
 """
-function mult_matrices(N::AbstractMatrix, L::AbstractVector, IB::Vector, X)
+function mult_matrices(N::AbstractMatrix, L::AbstractVector, IB::Vector, X; Id = false)
 
-    M0i = inv(N[:, IB])
+
     Idx = idx(L)
 
     M = Matrix{typeof(N[1,1])}[]
-    
+
     for x in X
         J = [get(Idx,L[i]*x,0) for i in IB]
         if  findfirst(x-> x==0, J) == nothing
-            push!(M, (M0i*N[:,J]))
+            push!(M, N[:,J])
         else
             @error "-- Basis*$x not in L"
         end
     end
-    M
+    if !Id
+        M0i = inv(N[:, IB])
+        return [M0i*m for m in M]
+    end
+    return M
 end
 """
 ```
